@@ -139,6 +139,14 @@ inline auto length(const V &v) -> typename V::scalar_type //decltype (v[0])
 }
 
 template<class V>
+inline auto normalize(const V &v) -> typename V::vector_type
+{
+	V out = v;
+	out /= length(v);
+	return out;
+}
+
+template<class V>
 inline auto dot(const V &a, const V &b) -> typename V::scalar_type
 {
 	typename V::scalar_type sum = 0;
@@ -166,12 +174,12 @@ int main ()
 	typedef vector<float, 3> vec3;
 	typedef vector<float, 2> vec2;
 	
-	vec3 a(1,0,0);
+	vec3 a(11,0,0);
 	vec3 b(0,1,0);
-	auto c = cross(b, a);
-	c *= a;
+	auto c = normalize(cross(a, b));
 
-	printf ("%f %f %f", c.x, c.y, c.z);
+	printf ("%f %f %f\n", c.x, c.y, c.z);
+	printf ("%f\n", length (c));
 	
 	return 0;
 }
