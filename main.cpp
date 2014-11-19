@@ -60,16 +60,6 @@ struct vector : public vector_base<T, N>
 	vector(vector_type &&) = default;
 	vector_type& operator=(vector &&) = default;
 	
-	// dummy structure that is only used
-	// to initialise it with an std::initalizer_list
-	// where we will get the chance to run
-	// special code for each list element 
-	struct constructor
-	{
-		template<typename... Args>
-		constructor(Args... args) {}
-	};
-	
 	// TODO: find a way to init vector elem using this func
 	//static void elem_set(scalar_type &arg)
 
@@ -79,7 +69,16 @@ struct vector : public vector_base<T, N>
 		static_assert(
 		  (sizeof...(args) <= num_components),
 		  "mismatch number of vector init arguments");
-		
+
+		// dummy structure that is only used
+		// to initialise it with an std::initalizer_list
+		// where we will get the chance to run
+		// special code for each list element 
+		struct constructor
+		{
+			constructor(...) {}
+		};
+			
 		int i = 0;
 		constructor(
 		// the use of {} guarantee left to right processing 
@@ -107,30 +106,62 @@ struct vector : public vector_base<T, N>
 		return data[i];
 	}
 	
-#define VEC_OP_UNARY_SCALAR(op) \
+#define DEF_OP_UNARY_SCALAR(op) \
 	vector_type& operator op(scalar_type s) \
 	{ \
 		iterate([&](int i){ data[i] op s; }); \
 		return *this; \
 	}
 	
-	VEC_OP_UNARY_SCALAR(+=)
-	VEC_OP_UNARY_SCALAR(-=)
-	VEC_OP_UNARY_SCALAR(*=)
-	VEC_OP_UNARY_SCALAR(/=)
+	DEF_OP_UNARY_SCALAR(+=)
+	DEF_OP_UNARY_SCALAR(-=)
+	DEF_OP_UNARY_SCALAR(*=)
+	DEF_OP_UNARY_SCALAR(/=)
 	
-#define VEC_OP_UNARY_VECTOR(op) \
+#define DEF_OP_UNARY_VECTOR(op) \
 	vector_type& operator op(const vector_type &o) \
 	{ \
 		iterate([&](int i){ data[i] op o[i]; }); \
 		return *this; \
 	}
 	
-	VEC_OP_UNARY_VECTOR(+=)
-	VEC_OP_UNARY_VECTOR(-=)
-	VEC_OP_UNARY_VECTOR(*=)
-	VEC_OP_UNARY_VECTOR(/=)
+	DEF_OP_UNARY_VECTOR(+=)
+	DEF_OP_UNARY_VECTOR(-=)
+	DEF_OP_UNARY_VECTOR(*=)
+	DEF_OP_UNARY_VECTOR(/=)
 };
+
+// NOTE: the -> return declaration is preferred 
+// because it allows for strong typing
+// meaning that the functions/operators 
+// template arguments are less
+// likely to accept invalid types 
+
+// NOTE: all the binary operators use an
+// implementation that will hopefully
+// trigger NRVO
+
+#define DEF_OP_BINARY(op, impl_op, a_type, b_type) \
+	template<class V> \
+	inline auto operator op(a_type a, b_type b) -> typename V::vector_type \
+	{ \
+		V out = a; \
+		out impl_op b; \
+		return out; \
+	}
+
+DEF_OP_BINARY(+, +=, const V&, const V&)
+DEF_OP_BINARY(-, -=, const V&, const V&)
+DEF_OP_BINARY(*, *=, const V&, const V&)
+DEF_OP_BINARY(/, /=, const V&, const V&)
+DEF_OP_BINARY(+, +=, const V&, typename V::scalar_type)
+DEF_OP_BINARY(+, +=, typename V::scalar_type, const V&)
+DEF_OP_BINARY(-, -=, const V&, typename V::scalar_type)
+DEF_OP_BINARY(-, -=, typename V::scalar_type, const V&)
+DEF_OP_BINARY(*, *=, const V&, typename V::scalar_type)
+DEF_OP_BINARY(*, *=, typename V::scalar_type, const V&)
+DEF_OP_BINARY(/, /=, const V&, typename V::scalar_type)
+DEF_OP_BINARY(/, /=, typename V::scalar_type, const V&)
 
 template<class V>
 inline auto length(const V &v) -> typename V::scalar_type //decltype (v[0])
@@ -175,8 +206,8 @@ int main ()
 	typedef vector<float, 2> vec2;
 	
 	vec3 a(11,0,0);
-	vec3 b(0,1,0);
-	auto c = normalize(cross(a, b));
+	vec3 b(0,11,0);
+	auto c = b - a; //normalize(cross(a, b));
 
 	printf ("%f %f %f\n", c.x, c.y, c.z);
 	printf ("%f\n", length (c));
