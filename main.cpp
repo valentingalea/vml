@@ -49,6 +49,17 @@ struct vector : public vector_base<T, N>
 		iterate([&](int i){ data[i] = 0; });
 	}
 	
+	vector(scalar_type s)
+	{
+		iterate([&](int i){ data[i] = s; });
+	}
+	
+	vector(const vector_type &) = default;
+	vector_type& operator=(const vector &) = default;
+	
+	vector(vector_type &&) = default;
+	vector_type& operator=(vector &&) = default;
+	
 	// dummy structure that is only used
 	// to initialise it with an std::initalizer_list
 	// where we will get the chance to run
@@ -63,7 +74,7 @@ struct vector : public vector_base<T, N>
 	//static void elem_set(scalar_type &arg)
 
 	template<typename... S>
-	explicit vector (S... args)
+	explicit vector(S... args)
 	{
 		static_assert(
 		  (sizeof...(args) <= num_components),
@@ -80,16 +91,45 @@ struct vector : public vector_base<T, N>
 		);
 	}
 	
-	scalar_type const operator[](int i) const
-	{
-		return data[i];
-	}
-	
 	template<class Func>
 	static void iterate(Func f)
 	{
 		static_for<0, N>()(f);
 	}
+	
+	scalar_type const operator[](int i) const
+	{
+		return data[i];
+	}
+	
+	scalar_type& operator[](int i)
+	{
+		return data[i];
+	}
+	
+#define VEC_OP_UNARY_SCALAR(op) \
+	vector_type& operator op(scalar_type s) \
+	{ \
+		iterate([&](int i){ data[i] op s; }); \
+		return *this; \
+	}
+	
+	VEC_OP_UNARY_SCALAR(+=)
+	VEC_OP_UNARY_SCALAR(-=)
+	VEC_OP_UNARY_SCALAR(*=)
+	VEC_OP_UNARY_SCALAR(/=)
+	
+#define VEC_OP_UNARY_VECTOR(op) \
+	vector_type& operator op(const vector_type &o) \
+	{ \
+		iterate([&](int i){ data[i] op o[i]; }); \
+		return *this; \
+	}
+	
+	VEC_OP_UNARY_VECTOR(+=)
+	VEC_OP_UNARY_VECTOR(-=)
+	VEC_OP_UNARY_VECTOR(*=)
+	VEC_OP_UNARY_VECTOR(/=)
 };
 
 template<class V>
@@ -129,8 +169,8 @@ int main ()
 	vec3 a(1,0,0);
 	vec3 b(0,1,0);
 	auto c = cross(b, a);
+	c *= a;
 
-	
 	printf ("%f %f %f", c.x, c.y, c.z);
 	
 	return 0;
