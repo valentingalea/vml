@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cmath>
+#include <utility>
 #include <static_for.h>
 
 template<typename T, int N>
@@ -30,10 +31,24 @@ struct vector_base<T, 3>
 	{
 		T data[3];
 		struct { T x, y, z; };
+		struct { T r, g, b; };
+		struct { vector_base<T, 2> xy; };
+		struct { T _x; vector_base<T, 2> yz; };
 	};
 };
 
-// TODO: more specialisation 
+template<typename T>
+struct vector_base<T, 4>
+{
+	union
+	{
+		T data[4];
+		struct { T x, y, z, w; };
+		struct { T r, g, b, a; };
+	};
+};
+
+// TODO: swizzle support
 
 template<typename T, int N>
 struct vector : public vector_base<T, N>
@@ -60,8 +75,26 @@ struct vector : public vector_base<T, N>
 	vector(vector_type &&) = default;
 	vector_type& operator=(vector &&) = default;
 	
-	// TODO: find a way to init vector elem using this func
-	//static void elem_set(scalar_type &arg)
+	bool elem_set(T *data, int &i, T &&arg)
+	{
+		data[i++] = arg;
+		return true;
+	}
+	
+	bool elem_set(T *data, int &i, vector<T, 2> &&arg)
+	{
+		data[i++] = arg.x;
+		data[i++] = arg.y;
+		return true;
+	}
+	
+	bool elem_set(T *data, int &i, vector<T, 3> &&arg)
+	{
+		data[i++] = arg.x;
+		data[i++] = arg.y;
+		data[i++] = arg.z;
+		return true;
+	}
 
 	template<typename... S>
 	explicit vector(S... args)
@@ -81,12 +114,13 @@ struct vector : public vector_base<T, N>
 			
 		int i = 0;
 		constructor(
-		// the use of {} guarantee left to right processing 
-		// the , 1 is a trick needed because you actually
-		// need to put something in each element
-		// so comma operator is used to first run some
-		// code and then to always return 1
-		  { (data[i++] = args, 1) ... }
+		// - the use of {} init list guarantees left to right
+		// processing order
+		// - the ... will basically expand and paste in 
+		// each function argument
+		// - which in turn we feed to a special function
+		// that overloads for every vector element type
+		{ elem_set(data, i, std::forward<S>(args)) ... }
 		);
 	}
 	
@@ -205,9 +239,9 @@ int main ()
 	typedef vector<float, 3> vec3;
 	typedef vector<float, 2> vec2;
 	
-	vec3 a(11,0,0);
-	vec3 b(0,11,0);
-	auto c = b - a; //normalize(cross(a, b));
+	vec3 a(vec2(1, 2), 3);
+	vec3 b(4, vec2(5, 6));
+	vec3 c = a - b; //normalize(cross(a, b));
 
 	printf ("%f %f %f\n", c.x, c.y, c.z);
 	printf ("%f\n", length (c));
