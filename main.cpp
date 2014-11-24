@@ -4,6 +4,23 @@
 #include <static_for.h>
 
 template<typename T, int N>
+struct vector;
+
+template<typename T, int P, int N>
+struct swizzler
+{
+	typedef vector<T, P> parent_type;
+	
+	T data[N];
+	
+	operator parent_type() const
+	{
+		parent_type v;
+		return v;
+	}
+};
+
+template<typename T, int N>
 struct vector_base
 {
 	union
@@ -32,8 +49,7 @@ struct vector_base<T, 3>
 		T data[3];
 		struct { T x, y, z; };
 		struct { T r, g, b; };
-		struct { vector_base<T, 2> xy; };
-		struct { T _x; vector_base<T, 2> yz; };
+		swizzler<T, 3, 2> xy;
 	};
 };
 
@@ -95,9 +111,15 @@ struct vector : public vector_base<T, N>
 		data[i++] = arg.z;
 		return true;
 	}
+	
+	template<typename TT, int PP, int NN>
+	bool elem_set(T *data, int &i, swizzler<TT, PP, NN> &&arg)
+	{
+		return true;
+	}
 
 	template<typename... S>
-	explicit vector(S... args)
+	vector(S... args)
 	{
 		static_assert(
 		  (sizeof...(args) <= num_components),
@@ -236,12 +258,14 @@ inline auto cross(const V &a, const V &b) -> typename V::vector_type
 
 int main ()
 {
+	typedef vector<float, 4> vec4;
 	typedef vector<float, 3> vec3;
 	typedef vector<float, 2> vec2;
 	
 	vec3 a(vec2(1, 2), 3);
 	vec3 b(4, vec2(5, 6));
 	vec3 c = a - b; //normalize(cross(a, b));
+	vec2 i = a.xy;
 
 	printf ("%f %f %f\n", c.x, c.y, c.z);
 	printf ("%f\n", length (c));
