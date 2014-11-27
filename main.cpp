@@ -5,17 +5,50 @@
 
 template<typename T, int N>
 struct vector;
+ 
+// * this is a convoluted way of alowing to set
+// an element by index only when the index is valid
+// it is done like this with a helper struct
+// because function template specialization is
+// not allowed - see: http://www.gotw.ca/publications/mill17.htm
+// * a cleaner alternative would be
+// SFINAE and std::enable_if
+template<int i, int j>
+struct swizzle_utils
+{
+	template<class Dest, class Src>
+	static void elem_set(Dest &dest, const Src &src)
+	{
+		dest[i] = src[j];
+	}
+};
+	
+template<int i>
+struct swizzle_utils<i, -1>
+{
+	template<class Dest, class Src>
+	static void elem_set(Dest &dest, const Src &src)
+	{
+	}
+};
 
-template<typename T, int P, int N>
+template<
+ typename T, int P, int N,
+ int X = -1, int Y = -1, int Z = -1, int W = -1>
 struct swizzler
 {
 	typedef vector<T, P> parent_type;
+	typedef vector<T, N> vector_type;
 	
 	T data[N];
 	
-	operator parent_type() const
+	operator vector_type() const
 	{
-		parent_type v;
+		vector_type v;
+		swizzle_utils<0, X>::elem_set(v.data, data);
+		swizzle_utils<1, Y>::elem_set(v.data, data);
+		swizzle_utils<2, Z>::elem_set(v.data, data);
+		swizzle_utils<4, W>::elem_set(v.data, data);
 		return v;
 	}
 };
@@ -49,7 +82,9 @@ struct vector_base<T, 3>
 		T data[3];
 		struct { T x, y, z; };
 		struct { T r, g, b; };
-		swizzler<T, 3, 2> xy;
+		swizzler<T, 3, 2, 0, 0> xx;
+		swizzler<T, 3, 2, 0, 1> xy;
+		swizzler<T, 3, 2, 0, 2> xz;
 	};
 };
 
@@ -63,8 +98,6 @@ struct vector_base<T, 4>
 		struct { T r, g, b, a; };
 	};
 };
-
-// TODO: swizzle support
 
 template<typename T, int N>
 struct vector : public vector_base<T, N>
@@ -97,24 +130,12 @@ struct vector : public vector_base<T, N>
 		return true;
 	}
 	
-	bool elem_set(T *data, int &i, vector<T, 2> &&arg)
+	template<int HowMany>
+	bool elem_set(T *data, int &i, vector<T, HowMany> &&arg)
 	{
-		data[i++] = arg.x;
-		data[i++] = arg.y;
-		return true;
-	}
-	
-	bool elem_set(T *data, int &i, vector<T, 3> &&arg)
-	{
-		data[i++] = arg.x;
-		data[i++] = arg.y;
-		data[i++] = arg.z;
-		return true;
-	}
-	
-	template<typename TT, int PP, int NN>
-	bool elem_set(T *data, int &i, swizzler<TT, PP, NN> &&arg)
-	{
+		static_for<0, HowMany>()([&](int j){
+			data[i++] = arg.data[j];
+		});
 		return true;
 	}
 
@@ -265,10 +286,10 @@ int main ()
 	vec3 a(vec2(1, 2), 3);
 	vec3 b(4, vec2(5, 6));
 	vec3 c = a - b; //normalize(cross(a, b));
-	vec2 i = a.xy;
+	vec2 i = a.xz;
 
 	printf ("%f %f %f\n", c.x, c.y, c.z);
-	printf ("%f\n", length (c));
+	printf ("%f %f\n", i[0], i[1]);
 	
 	return 0;
 }
