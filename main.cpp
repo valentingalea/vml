@@ -1,7 +1,8 @@
 #include <cstdio>
 #include <cmath>
 #include <utility>
-#include <static_for.h>
+
+#include "static_for.h"
 
 template<typename T, int N>
 struct vector;
@@ -286,10 +287,10 @@ int main ()
 	vec3 a(vec2(1, 2), 3);
 	vec3 b(4, vec2(5, 6));
 	vec3 c = a - b; //normalize(cross(a, b));
-	vec2 i = a.xz;
+	//vec2 i = a.xz;
 
 	printf ("%f %f %f\n", c.x, c.y, c.z);
-	printf ("%f %f\n", i[0], i[1]);
+	//printf ("%f %f\n", i[0], i[1]);
 	
 	return 0;
 }
