@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cmath>
 #include <utility>
+#include <type_traits>
 
 #include "static_for.h"
 
@@ -12,8 +13,6 @@ struct vector;
 // it is done like this with a helper struct
 // because function template specialization is
 // not allowed - see: http://www.gotw.ca/publications/mill17.htm
-// * a cleaner alternative would be
-// SFINAE and std::enable_if
 template<int i, int j>
 struct swizzle_utils
 {
@@ -141,7 +140,7 @@ struct vector : public vector_base<T, N>
 	}
 
 	template<typename... S>
-	vector(S... args)
+	explicit vector(S... args)
 	{
 		static_assert(
 		  (sizeof...(args) <= num_components),
@@ -278,19 +277,26 @@ inline auto cross(const V &a, const V &b) -> typename V::vector_type
 	);
 }
 
-int main ()
+typedef vector<float, 4> vec4;
+typedef vector<float, 3> vec3;
+typedef vector<float, 2> vec2;
+
+void test_inout(vec3 &in)
 {
-	typedef vector<float, 4> vec4;
-	typedef vector<float, 3> vec3;
-	typedef vector<float, 2> vec2;
-	
+	in.x = 1000;
+}
+
+int main ()
+{	
 	vec3 a(vec2(1, 2), 3);
 	vec3 b(4, vec2(5, 6));
 	vec3 c = a - b; //normalize(cross(a, b));
-	//vec2 i = a.xz;
+	vec2 i = a.xz;
+	
+	test_inout(c);
 
 	printf ("%f %f %f\n", c.x, c.y, c.z);
-	//printf ("%f %f\n", i[0], i[1]);
+	printf ("%f %f\n", i[0], i[1]);
 	
 	return 0;
 }
