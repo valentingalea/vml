@@ -8,7 +8,7 @@
 template<typename T, int N>
 struct vector;
  
-// * this is a convoluted way of alowing to set
+// * this is a quick way of alowing to set
 // an element by index only when the index is valid
 // it is done like this with a helper struct
 // because function template specialization is
@@ -110,17 +110,21 @@ struct vector : public vector_base<T, N>
 	
 	vector()
 	{
-		iterate([&](int i){ data[i] = 0; });
+		iterate([&](int i){
+			data[i] = 0;
+		});
 	}
 	
 	vector(scalar_type s)
 	{
-		iterate([&](int i){ data[i] = s; });
+		iterate([s, this](int i){
+			data[i] = s;
+		});
 	}
 	
+	//TODO: clarify if these are really needed
 	vector(const vector_type &) = default;
 	vector_type& operator=(const vector &) = default;
-	
 	vector(vector_type &&) = default;
 	vector_type& operator=(vector &&) = default;
 	
@@ -163,14 +167,14 @@ struct vector : public vector_base<T, N>
 		// each function argument
 		// - which in turn we feed to a special function
 		// that overloads for every vector element type
-		{ elem_set(data, i, std::forward<S>(args)) ... }
+			{ elem_set(data, i, std::forward<S>(args)) ... }
 		);
 	}
 	
 	template<class Func>
-	static void iterate(Func f)
+	static void iterate(Func &&f)
 	{
-		static_for<0, N>()(f);
+		static_for<0, N>()(std::forward<Func>(f));
 	}
 	
 	scalar_type const operator[](int i) const
@@ -186,7 +190,7 @@ struct vector : public vector_base<T, N>
 #define DEF_OP_UNARY_SCALAR(op) \
 	vector_type& operator op(scalar_type s) \
 	{ \
-		iterate([&](int i){ data[i] op s; }); \
+		iterate([s, this](int i){ data[i] op s; }); \
 		return *this; \
 	}
 	
@@ -196,9 +200,9 @@ struct vector : public vector_base<T, N>
 	DEF_OP_UNARY_SCALAR(/=)
 	
 #define DEF_OP_UNARY_VECTOR(op) \
-	vector_type& operator op(const vector_type &o) \
+	vector_type& operator op(const vector_type &v) \
 	{ \
-		iterate([&](int i){ data[i] op o[i]; }); \
+		iterate([&](int i){ data[i] op v[i]; }); \
 		return *this; \
 	}
 	
@@ -288,8 +292,8 @@ void test_inout(vec3 &in)
 
 int main ()
 {	
-	vec3 a(vec2(1, 2), 3);
-	vec3 b(4, vec2(5, 6));
+	vec3 a(vec2(1.f, 2.f), 3.f);
+	vec3 b(4.f, vec2(5.f, 6.f));
 	vec3 c = a - b; //normalize(cross(a, b));
 	vec2 i = a.xz;
 	
