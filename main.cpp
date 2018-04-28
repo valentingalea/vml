@@ -14,27 +14,27 @@ struct vector;
 // because function template specialization is
 // not allowed - see: http://www.gotw.ca/publications/mill17.htm
 template<int i, int j>
-struct swizzle_utils
+struct swizzle_index
 {
 	template<class Dest, class Src>
-	static void elem_set(Dest &dest, const Src &src)
+	static void set(Dest &dest, const Src &src)
 	{
 		dest[i] = src[j];
 	}
 };
 	
 template<int i>
-struct swizzle_utils<i, -1>
+struct swizzle_index<i, -1>
 {
 	template<class Dest, class Src>
-	static void elem_set(Dest &dest, const Src &src)
+	static void set(Dest &dest, const Src &src)
 	{
 	}
 };
 
 template<
- typename T, int P, int N,
- int X = -1, int Y = -1, int Z = -1, int W = -1>
+	typename T, int P, int N,
+	int X = -1, int Y = -1, int Z = -1, int W = -1>
 struct swizzler
 {
 	typedef vector<T, P> parent_type;
@@ -45,10 +45,10 @@ struct swizzler
 	operator vector_type() const
 	{
 		vector_type v;
-		swizzle_utils<0, X>::elem_set(v.data, data);
-		swizzle_utils<1, Y>::elem_set(v.data, data);
-		swizzle_utils<2, Z>::elem_set(v.data, data);
-		swizzle_utils<4, W>::elem_set(v.data, data);
+		swizzle_index<0, X>::set(v.data, data);
+		swizzle_index<1, Y>::set(v.data, data);
+		swizzle_index<2, Z>::set(v.data, data);
+		swizzle_index<4, W>::set(v.data, data);
 		return v;
 	}
 };
@@ -128,14 +128,14 @@ struct vector : public vector_base<T, N>
 	vector(vector_type &&) = default;
 	vector_type& operator=(vector &&) = default;
 	
-	bool elem_set(T *data, int &i, T &&arg)
+	bool construct_at_index(int &i, T &&arg)
 	{
 		data[i++] = arg;
 		return true;
 	}
 	
 	template<int HowMany>
-	bool elem_set(T *data, int &i, vector<T, HowMany> &&arg)
+	bool construct_at_index(int &i, vector<T, HowMany> &&arg)
 	{
 		static_for<0, HowMany>()([&](int j){
 			data[i++] = arg.data[j];
@@ -167,7 +167,7 @@ struct vector : public vector_base<T, N>
 		// each function argument
 		// - which in turn we feed to a special function
 		// that overloads for every vector element type
-			{ elem_set(data, i, std::forward<S>(args)) ... }
+		{ construct_at_index(i, std::forward<S>(args)) ... }
 		);
 	}
 	
