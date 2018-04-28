@@ -6,9 +6,9 @@ template<
 struct static_for
 {
 	template<class Func>
-	void operator ()(Func f)
+	void operator ()(Func &&f) //TODO: constrain with enable_if callable
 	{
-		f (Begin);
+		f(Begin);
 		if (Begin < End) {
 			static_for<Begin + 1, End>()(f);
 		}
@@ -19,7 +19,7 @@ template<int N>
 struct static_for<N, N>
 {
 	template<class Func>
-	void operator ()(Func f)
+	void operator ()(Func &&f)
 	{
 	}
 };
