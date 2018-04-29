@@ -28,7 +28,7 @@ template<int i>
 struct swizzle_index<i, -1>
 {
 	template<class Dest, class Src>
-	static void set(Dest &dest, const Src &src)
+	static void set(Dest &, const Src &)
 	{
 	}
 };
@@ -36,7 +36,7 @@ struct swizzle_index<i, -1>
 template<
 	typename T, int P, int N,
 	int X = -1, int Y = -1, int Z = -1, int W = -1>
-	struct swizzler
+struct swizzler
 {
 	typedef vector<T, P> parent_type;
 	typedef vector<T, N> vector_type;
@@ -62,6 +62,9 @@ struct vector : public vector_base<T, N>
 	typedef T scalar_type;
 	typedef vector<T, N> vector_type;
 	typedef vector_base<T, N> base_type;
+
+	// bring in scope the union member
+	using base_type::data;
 
 	vector()
 	{
