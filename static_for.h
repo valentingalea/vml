@@ -19,7 +19,7 @@ template<int N>
 struct static_for<N, N>
 {
 	template<class Func>
-	void operator ()(Func &&f)
+	constexpr void operator ()(Func &&f)
 	{
 	}
 };
