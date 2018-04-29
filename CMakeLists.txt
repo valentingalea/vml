@@ -1,3 +1,7 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.0)
 project (mathlib)
 add_executable(mathlib main.cpp)
+if (MSVC)
+	target_compile_options(mathlib PRIVATE "/W4")
+	target_compile_options(mathlib PRIVATE "/permissive-")
+endif()
