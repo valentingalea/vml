@@ -10,13 +10,8 @@ struct static_for
 	{
 		f(Begin);
 
-//TODO: a cleaner way is `if constexpr`
-#pragma warning(push)
-#pragma warning(disable:4127) // conditional expression is constant
-		if (Begin < End) {
-#pragma warning(pop)
-			static_for<Begin + 1, End>()(f);
-		}
+		static_for<Begin + 1, End>()(
+			std::forward<Func>(f));
 	}
 };
 
