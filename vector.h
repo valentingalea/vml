@@ -34,11 +34,10 @@ struct swizzle_index<i, -1>
 };
 
 template<
-	typename T, int P, int N,
+	typename T, int N,
 	int X = -1, int Y = -1, int Z = -1, int W = -1>
 struct swizzler
 {
-	typedef vector<T, P> parent_type;
 	typedef vector<T, N> vector_type;
 
 	T data[N];
