@@ -38,7 +38,7 @@ template<
 	int X = -1, int Y = -1, int Z = -1, int W = -1>
 struct swizzler
 {
-	typedef vector<T, N> vector_type;
+	using vector_type = vector<T, N>;
 
 	T data[N];
 
@@ -58,9 +58,12 @@ struct swizzler
 template<typename T, int N>
 struct vector : public vector_base<T, N>
 {
-	typedef T scalar_type;
-	typedef vector<T, N> vector_type;
-	typedef vector_base<T, N> base_type;
+	using scalar_type = T;
+	using vector_type = vector<T, N>;
+	using base_type = vector_base<T, N>;
+
+	// useful in non-member functions
+	static constexpr auto num_components = N;
 
 	// bring in scope the union member
 	using base_type::data;
