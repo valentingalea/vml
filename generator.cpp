@@ -28,4 +28,6 @@ int main()
 {
 	gen_vec2();
 	gen_vec3();
+
+	return 0;
 }

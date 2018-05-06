@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.0)
 project (mathlib)
 add_executable(mathlib main.cpp)
+add_executable(generator generator.cpp)
 if (MSVC)
 	target_compile_options(mathlib PRIVATE "/W4")
 	target_compile_options(mathlib PRIVATE "/permissive-")
