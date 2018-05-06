@@ -1,0 +1,16 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "testing.exe",
+      "name": "testing.exe",
+      "args": [
+        "--success",
+        "--wait-for-keypress exit"
+      ]
+    }
+  ]
+}
