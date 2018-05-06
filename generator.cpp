@@ -2,10 +2,10 @@
 
 constexpr static auto *indices = "xyzw";
 	
-void gen_vec2()
+void gen_vec2(int N)
 {
-	for (int j = 0; j < 2; j++) {
-		for (int i = 0; i < 2; i++) {
+	for (int j = 0; j < N; j++) {
+		for (int i = 0; i < N; i++) {
 			printf("swizzler<T, 2, %d, %d> %c%c;\n",
 				j, i, indices[j], indices[i]);
 		}
@@ -26,8 +26,14 @@ void gen_vec3()
 
 int main()
 {
-	gen_vec2();
+	gen_vec2(2); // for pure vec2
+	printf("\n");
+
+	gen_vec2(3); // for vec2 swizzles of vec3
+	printf("\n");
+
 	gen_vec3();
+	printf("\n");
 
 	return 0;
 }
