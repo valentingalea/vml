@@ -82,7 +82,8 @@ struct vector : public vector_base<T, N>
 		});
 	}
 
-	//TODO: clarify if these are really needed
+	// not realy needed but good for debugging
+	// ex: switch to `delete` to see where they are needed
 	vector(const vector_type &) = default;
 	vector_type& operator=(const vector &) = default;
 	vector(vector_type &&) = default;
