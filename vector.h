@@ -6,6 +6,10 @@
 
 namespace vmath {
 
+// we'll have to accept this
+// warning C4201 : nonstandard extension used : nameless struct / union
+#pragma warning(disable: 4201)
+
 template<typename T, size_t N>
 struct vector;
 
