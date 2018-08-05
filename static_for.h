@@ -1,8 +1,8 @@
 #pragma once
 
 template<
-    int Begin, 
-    int End>
+    size_t Begin, 
+    size_t End>
 struct static_for
 {
 	template<class Func>
@@ -15,7 +15,7 @@ struct static_for
 	}
 };
 
-template<int N>
+template<size_t N>
 struct static_for<N, N>
 {
 	template<class Func>
