@@ -52,7 +52,7 @@ struct swizzler
 		swizzle_index<0, X>::set(v.data, data);
 		swizzle_index<1, Y>::set(v.data, data);
 		swizzle_index<2, Z>::set(v.data, data);
-		swizzle_index<4, W>::set(v.data, data);
+		swizzle_index<3, W>::set(v.data, data);
 		return v;
 	}
 };

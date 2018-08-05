@@ -178,3 +178,54 @@ TEST_CASE("spec::Par_5_4_2__Constructors")
 	REQUIRE(rgb.y == Approx(1.f));
 	REQUIRE(rgb.z == Approx(0.f));
 }
+
+TEST_CASE("spec::Par_5_5__Vector_and_Scalar_Components_and_Length")
+{
+	{
+		vec2 pos;
+		float height;
+		pos.x; // is legal
+			   // pos.z // is illegal
+			   // height.x; // is legal  <-- THIS DOES NOT WORK
+			   // height.y // is illegal
+	}
+
+	{
+		vec4 v4;
+		v4.rgba; // is a vec4 and the same as just using v4,
+		v4.rgb; // is a vec3,
+		v4.b; // is a float,
+		v4.xy; // is a vec2,
+			   // v4.xgba; // is illegal - the component names do not come from 
+	}
+
+	{
+		vec4 pos = vec4(1.0, 2.0, 3.0, 4.0);
+		vec4 swiz = pos.wzyx;
+		REQUIRE(swiz.x == Approx(4.f));
+		REQUIRE(swiz.y == Approx(3.f));
+		REQUIRE(swiz.z == Approx(2.f));
+		REQUIRE(swiz.w == Approx(1.f));
+		vec4 dup = pos.xxyy;
+		REQUIRE(dup.x == Approx(1.f));
+		REQUIRE(dup.y == Approx(1.f));
+		REQUIRE(dup.z == Approx(2.f));
+		REQUIRE(dup.w == Approx(2.f));
+		//float f = 1.2;
+		// vec4 dup = f.xxxx; // dup = (1.2, 1.2, 1.2, 1.2) <-- THIS DOES NOT WORK
+	}
+
+	{
+		vec4 pos = vec4(1.0, 2.0, 3.0, 4.0);
+	//TODO: fix
+	//	pos.xw = vec2(5.0, 6.0);
+	//	pos.wx = vec2(7.0, 8.0);
+		//pos.xx = vec2(3.0, 4.0); // illegal - 'x' used twice
+		//pos.xy = vec3(1.0, 2.0, 3.0); // illegal - mismatch between vec2 and vec3
+	}
+
+	{
+		//vec3 v;
+		// const int L = v.length();  <-- THIS DOES NOT WORK
+	}
+}

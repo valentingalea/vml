@@ -1,24 +1,56 @@
 #include <cstdio>
 
-constexpr static auto *indices = "xyzw";
+constexpr static auto str_type = "swizzler";
+constexpr static auto str_xyzw = "xyzw";
+constexpr static auto str_rgba = "rgba";
+constexpr static auto str_stpq = "stpq";
 	
-void gen_vec2(int N)
+void gen_perm_for_2_places(int V)
 {
-	for (int j = 0; j < N; j++) {
-		for (int i = 0; i < N; i++) {
-			printf("swizzler<T, 2, %d, %d> %c%c;\n",
-				j, i, indices[j], indices[i]);
+	for (int j = 0; j < V; j++) {
+		for (int i = 0; i < V; i++) {
+			printf("%s<T, 2, %d, %d> %c%c, %c%c, %c%c;\n",
+				str_type,
+				j, i,
+				str_xyzw[j], str_xyzw[i],
+				str_rgba[j], str_rgba[i],
+				str_stpq[j], str_stpq[i]
+			);
 		}
 	}
 }
 
-void gen_vec3()
+void gen_perm_for_3_places(int V)
 {
-	for (int k = 0; k < 3; k++) {
-		for (int j = 0; j < 3; j++) {
-			for (int i = 0; i < 3; i++) {
-				printf("swizzler<T, 3, %d, %d, %d> %c%c%c;\n",
-				k, j, i, indices[k], indices[j], indices[i]);
+	for (int k = 0; k < V; k++) {
+		for (int j = 0; j < V; j++) {
+			for (int i = 0; i < V; i++) {
+				printf("%s<T, 3, %d, %d, %d> %c%c%c, %c%c%c, %c%c%c;\n",
+					str_type,
+					k, j, i,
+					str_xyzw[k], str_xyzw[j], str_xyzw[i],
+					str_rgba[k], str_rgba[j], str_rgba[i],
+					str_stpq[k], str_stpq[j], str_stpq[i]
+				);
+			}
+		}
+	}
+}
+
+void gen_perm_for_4_places(int V)
+{
+	for (int l = 0; l < V; l++) {
+		for (int k = 0; k < V; k++) {
+			for (int j = 0; j < V; j++) {
+				for (int i = 0; i < V; i++) {
+					printf("%s<T, 4, %d, %d, %d, %d> %c%c%c%c, %c%c%c%c, %c%c%c%c;\n",
+						str_type,
+						l, k, j, i,
+						str_xyzw[l], str_xyzw[k], str_xyzw[j], str_xyzw[i],
+						str_rgba[l], str_rgba[k], str_rgba[j], str_rgba[i],
+						str_stpq[l], str_stpq[k], str_stpq[j], str_stpq[i]
+					);
+				}
 			}
 		}
 	}
@@ -26,14 +58,29 @@ void gen_vec3()
 
 int main()
 {
-	gen_vec2(2); // for pure vec2
+#if 0
+	printf("vec2\n");
+	gen_perm_for_2_places(2); // vec2 by itself
+	gen_perm_for_3_places(2); // vec3 swizzles of vec2
+	gen_perm_for_4_places(2); // vec3 swizzles of vec2
 	printf("\n");
+#endif
 
-	gen_vec2(3); // for vec2 swizzles of vec3
+#if 1
+	printf("vec3\n");
+	gen_perm_for_2_places(3); // vec2 swizzles of vec3
+	gen_perm_for_3_places(3); // vec3 itself
+	gen_perm_for_4_places(3); // vec4 swizzles of vec3
 	printf("\n");
+#endif
 
-	gen_vec3();
+#if 0
+	printf("vec4\n");
+	gen_perm_for_2_places(4); // vec2 swizzles of vec4
+	gen_perm_for_3_places(4); // vec3 swizzles of vec3
+	gen_perm_for_4_places(4); // vec4 itself
 	printf("\n");
+#endif
 
 	return 0;
 }
