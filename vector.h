@@ -6,7 +6,7 @@
 
 namespace vmath {
 
-template<typename T, int N>
+template<typename T, size_t N>
 struct vector;
 
 // * this is a quick way of alowing to set
@@ -55,7 +55,7 @@ struct swizzler
 
 #include "v_base.h"
 
-template<typename T, int N>
+template<typename T, size_t N>
 struct vector : public vector_base<T, N>
 {
 	using scalar_type = T;
@@ -70,14 +70,14 @@ struct vector : public vector_base<T, N>
 
 	vector()
 	{
-		iterate([&](int i) {
+		iterate([&](size_t i) {
 			data[i] = 0;
 		});
 	}
 
 	vector(scalar_type s)
 	{
-		iterate([s, this](int i) {
+		iterate([s, this](size_t i) {
 			data[i] = s;
 		});
 	}
@@ -89,17 +89,17 @@ struct vector : public vector_base<T, N>
 	vector(vector_type &&) = default;
 	vector_type& operator=(vector &&) = default;
 
-	bool construct_at_index(int &i, T &&arg)
+	bool construct_at_index(size_t &i, T &&arg)
 	{
 		data[i++] = arg;
 		return true;
 	}
 
-	template<int HowMany>
-	bool construct_at_index(int &i, vector<T, HowMany> &&arg)
+	template<size_t HowMany>
+	bool construct_at_index(size_t &i, vector<T, HowMany> &&arg)
 	{
 		constexpr auto count = std::min(N, HowMany);
-		static_for<0, count>()([&](int j) {
+		static_for<0, count>()([&](size_t j) {
 			data[i++] = arg.data[j];
 		});
 		return true;
@@ -112,16 +112,13 @@ struct vector : public vector_base<T, N>
 			(sizeof...(args) <= N),
 			"mismatch number of vector init arguments");
 
-		// dummy structure that is only used
-		// to initialise it with an std::initalizer_list
-		// where we will get the chance to run
-		// special code for each list element 
+		// dummy forwarding structure
 		struct constructor
 		{
 			constructor(...) {}
 		};
 
-		int i = 0;
+		size_t i = 0;
 		constructor(
 			// - the use of {} init list guarantees left to right
 			// processing order
@@ -139,12 +136,12 @@ struct vector : public vector_base<T, N>
 		static_for<0, N>()(std::forward<Func>(f));
 	}
 
-	scalar_type const operator[](int i) const
+	scalar_type const operator[](size_t i) const
 	{
 		return data[i];
 	}
 
-	scalar_type& operator[](int i)
+	scalar_type& operator[](size_t i)
 	{
 		return data[i];
 	}

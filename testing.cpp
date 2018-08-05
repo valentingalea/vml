@@ -47,6 +47,14 @@ TEST_CASE("vec2 basic init", "[vec2]")
 		REQUIRE(v.x == 3);
 	}
 
+	SECTION("combo") {
+		ivec4 v = ivec4(1, ivec2(2, 3), 4);
+		REQUIRE(v.x == 1);
+		REQUIRE(v.y == 2);
+		REQUIRE(v.z == 3);
+		REQUIRE(v.w == 4);
+	}
+
 //
 // SHOULDN'T COMPILE
 //

@@ -1,7 +1,7 @@
 #define DEF_OP_UNARY_SCALAR(op)				\
 	vector_type& operator op(scalar_type s) \
 	{										\
-		iterate([s, this](int i){			\
+		iterate([s, this](size_t i){			\
 			data[i] op s;					\
 		});									\
 		return *this;						\
@@ -15,7 +15,7 @@ DEF_OP_UNARY_SCALAR(/=)
 #define DEF_OP_UNARY_VECTOR(op)				\
 	vector_type& operator op(const vector_type &v) \
 	{										\
-		iterate([&](int i){					\
+		iterate([&](size_t i){					\
 			data[i] op v[i];				\
 		});									\
 		return *this;						\

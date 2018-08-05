@@ -1,4 +1,4 @@
-template<typename T, int N>
+template<typename T, size_t N>
 struct vector_base
 {
 	union
