@@ -96,7 +96,7 @@ struct vector : public vector_base<T, N>
 	bool construct_at_index(size_t &i, T &&arg)
 	{
 		data[i++] = arg;
-		return true;
+		return true; // dummy return, just because it wil be called in a {} init list
 	}
 
 	template<size_t HowMany>
