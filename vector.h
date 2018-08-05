@@ -43,12 +43,34 @@ template<
 struct swizzler
 {
 	using vector_type = vector<T, N>;
+	using sibling_up = swizzler<T, N + 1, X, Y, Z, W>;
+	using sibling_down = swizzler<T, N - 1, X, Y, Z, W>;
 
 	T data[N];
 
-	operator vector_type() const
+	operator vector_type()
 	{
 		vector_type v;
+		swizzle_index<0, X>::set(v.data, data);
+		swizzle_index<1, Y>::set(v.data, data);
+		swizzle_index<2, Z>::set(v.data, data);
+		swizzle_index<3, W>::set(v.data, data);
+		return v;
+	}
+
+	operator sibling_up()
+	{
+		sibling_up v;
+		swizzle_index<0, X>::set(v.data, data);
+		swizzle_index<1, Y>::set(v.data, data);
+		swizzle_index<2, Z>::set(v.data, data);
+		swizzle_index<3, W>::set(v.data, data);
+		return v;
+	}
+
+	operator sibling_down()
+	{
+		sibling_down v;
 		swizzle_index<0, X>::set(v.data, data);
 		swizzle_index<1, Y>::set(v.data, data);
 		swizzle_index<2, Z>::set(v.data, data);
