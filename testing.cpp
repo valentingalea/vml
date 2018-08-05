@@ -59,6 +59,19 @@ TEST_CASE("vec2 basic init", "[vec2]")
 		REQUIRE(v.w == 4);
 	}
 
+	//SECTION("non scalar type") {
+	//	struct X {} x;
+	//	ivec2 v = ivec2(x);
+	//}
+
+	SECTION("combo init diff type") {
+		vec4 v = vec4(1, ivec2(2, 3), 4);
+		REQUIRE(v.x == Approx(1.f));
+		REQUIRE(v.y == Approx(2.f));
+		REQUIRE(v.z == Approx(3.f));
+		REQUIRE(v.w == Approx(4.f));
+	}
+
 //
 // SHOULDN'T COMPILE
 //
@@ -99,13 +112,6 @@ TEST_CASE("swizzle construct", "[vec2][vec3]")
 	//	REQUIRE(rep.y == 2);
 	//	REQUIRE(rep.z == 42);
 	//}
-
-	SECTION("swizzle explicit ctor") {
-		ivec3 rep(ivec2(3, 4), 5);
-		REQUIRE(rep.x == 3);
-		REQUIRE(rep.y == 4);
-		REQUIRE(rep.z == 5);
-	}
 }
 
 TEST_CASE("lvalues", "[vec2][vec3]")

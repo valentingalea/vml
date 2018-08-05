@@ -93,16 +93,16 @@ struct vector : public vector_base<T, N>
 	vector(vector_type &&) = default;
 	vector_type& operator=(vector &&) = default;
 
-	bool construct_at_index(size_t &i, T &&arg)
+	bool construct_at_index(size_t &i, scalar_type arg)
 	{
 		data[i++] = arg;
 		return true; // dummy return, just because it wil be called in a {} init list
 	}
 
-	template<size_t HowMany>
-	bool construct_at_index(size_t &i, vector<T, HowMany> &&arg)
+	template<typename Other, size_t Other_N>
+	bool construct_at_index(size_t &i, vector<Other, Other_N> &&arg)
 	{
-		constexpr auto count = std::min(N, HowMany);
+		constexpr auto count = std::min(N, Other_N);
 		static_for<0, count>()([&](size_t j) {
 			data[i++] = arg.data[j];
 		});
