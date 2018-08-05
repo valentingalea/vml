@@ -98,7 +98,8 @@ struct vector : public vector_base<T, N>
 	template<int HowMany>
 	bool construct_at_index(int &i, vector<T, HowMany> &&arg)
 	{
-		static_for<0, HowMany>()([&](int j) {
+		constexpr auto count = std::min(N, HowMany);
+		static_for<0, count>()([&](int j) {
 			data[i++] = arg.data[j];
 		});
 		return true;
