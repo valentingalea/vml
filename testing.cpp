@@ -144,6 +144,22 @@ TEST_CASE("operators", "[vec2]")
 	REQUIRE(p.y == Approx(-1.f));
 }
 
+
+TEST_CASE("union member access")
+{
+	vec2 v;
+
+	v.x = 42;
+	v.y = 43;
+	v.u = 44;
+
+	REQUIRE(v.x == 44);
+	REQUIRE(v[1] == 43);
+
+	v.xy.data[0] = 99;
+	REQUIRE(v.x == 99);
+}
+
 TEST_CASE("spec::Par_5_4_2__Constructors")
 {
 	int _int = 1;
