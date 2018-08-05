@@ -2,6 +2,10 @@
 #define CATCH_CONFIG_FAST_COMPILE // https://github.com/catchorg/Catch2/blob/master/docs/configuration.md#catch_config_fast_compile
 #include "catch.hpp"
 
+// turn off for the purposes of these tests
+// warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+#pragma warning(disable: 4244)
+
 #include "vector.h"
 
 typedef vmath::vector<double, 4> dvec4;
@@ -47,7 +51,7 @@ TEST_CASE("vec2 basic init", "[vec2]")
 		REQUIRE(v.x == 3);
 	}
 
-	SECTION("combo") {
+	SECTION("combo init same type") {
 		ivec4 v = ivec4(1, ivec2(2, 3), 4);
 		REQUIRE(v.x == 1);
 		REQUIRE(v.y == 2);
@@ -142,7 +146,7 @@ TEST_CASE("spec::Par_5_4_2__Constructors")
 	vec3 _vec3(5.0f, 6.0f, 7.0f);
 	vec4 _vec4(8.0f, 9.0f, 10.0f, 11.0f);
 	vec4 _ivec4(12, 13, 14, 15);
-	double _double = 16;
+
 	dvec2 _dvec2(17, 18);
 	dvec3 _dvec3(19, 20, 21);
 	dvec4 _dvec4(22, 23, 24, 25);
