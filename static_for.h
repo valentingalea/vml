@@ -6,7 +6,7 @@ template<
 struct static_for
 {
 	template<class Func>
-	void operator ()(Func &&f) //TODO: constrain with `enable_if callable`
+	constexpr void operator ()(Func &&f) //TODO: constrain with `enable_if callable`
 	{
 		f(Begin);
 
