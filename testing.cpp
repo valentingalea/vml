@@ -18,6 +18,10 @@ typedef vmath::vector<int, 4> ivec4;
 typedef vmath::vector<int, 3> ivec3;
 typedef vmath::vector<int, 2> ivec2;
 
+static_assert(sizeof(vec4) == sizeof(float) * 4, "vec4 size mismatch");
+static_assert(sizeof(vec3) == sizeof(float) * 3, "vec3 size mismatch");
+static_assert(sizeof(vec2) == sizeof(float) * 2, "vec2 size mismatch");
+
 TEST_CASE("vec2 basic init", "[vec2]")
 {
 	SECTION("default ctor") {
@@ -144,7 +148,6 @@ TEST_CASE("operators", "[vec2]")
 	REQUIRE(p.y == Approx(-1.f));
 }
 
-
 TEST_CASE("union member access")
 {
 	vec2 v;
@@ -158,6 +161,17 @@ TEST_CASE("union member access")
 
 	v.xy.data[0] = 99;
 	REQUIRE(v.x == 99);
+}
+
+void inout_func(vec3 &inout) {}
+
+TEST_CASE("inout args")
+{
+	auto v = vec3(0);
+	inout_func(v);
+
+	//TODO: https://github.com/gwiazdorrr/CxxSwizzle/issues/4
+	//inout_func(v.xyz);
 }
 
 TEST_CASE("spec::Par_5_4_2__Constructors")
