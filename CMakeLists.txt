@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.0)
 project (mathlib)
 if (MSVC)
-	add_compile_options(/W4 /permissive- /std:c++14)
+	add_compile_options(/W4 /permissive- /std:c++17)
 endif()
 add_executable(mathlib main.cpp)
 add_executable(testing catch.hpp testing.cpp)

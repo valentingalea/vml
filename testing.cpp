@@ -76,20 +76,19 @@ TEST_CASE("swizzle construct", "[vec2][vec3]")
 {
 	ivec3 v(1, 2, 3);
 
-//TODO: implement
-	//SECTION("swizzle reverse") {
-	//	ivec3 rev = v.zyx;
-	//	REQUIRE(rev.x == 3);
-	//	REQUIRE(rev.y == 2);
-	//	REQUIRE(rev.z == 1);
-	//}
+	SECTION("swizzle reverse") {
+		ivec3 rev = v.zyx;
+		REQUIRE(rev.x == 3);
+		REQUIRE(rev.y == 2);
+		REQUIRE(rev.z == 1);
+	}
 
-	//SECTION("swizzle repeat") {
-	//	ivec3 rep = v.zzz;
-	//	REQUIRE(rep.x == 3);
-	//	REQUIRE(rep.y == 3);
-	//	REQUIRE(rep.z == 3);
-	//}
+	SECTION("swizzle repeat") {
+		ivec3 rep = v.zzz;
+		REQUIRE(rep.x == 3);
+		REQUIRE(rep.y == 3);
+		REQUIRE(rep.z == 3);
+	}
 
 //TODO: can this ever work?
 	//SECTION("swizzle chain") {
@@ -119,15 +118,14 @@ TEST_CASE("lvalues", "[vec2][vec3]")
 		REQUIRE(_2.y == 102);
 	}
 
-//TODO: implement
-	//SECTION("vec3 swizzle from vec2") {
-	//	_3.xy = _2;
-	//	REQUIRE(_3.x == 0);
-	//	REQUIRE(_3.y == 0);
-	//}
-	//SECTION("vec3 from single component") {
-	//	_3.xyz = _2.x;
-	//}
+	SECTION("vec3 swizzle from vec2") {
+		_3.xy = _2;
+		REQUIRE(_3.x == 0);
+		REQUIRE(_3.y == 0);
+	}
+	SECTION("vec3 from single component") {
+		_3.xyz = _2.x;
+	}
 }
 
 //TODO: implement
@@ -139,21 +137,20 @@ TEST_CASE("lvalues", "[vec2][vec3]")
 //	REQUIRE(p.y == Approx(-1.f));
 //}
 
-//TODO: Fix
-//TEST_CASE("union member access")
-//{
-//	vec2 v;
-//
-//	v.x = 42;
-//	v.y = 43;
-//	v.u = 44;
-//
-//	REQUIRE(v.x == 44);
-//	REQUIRE(v[1] == 43);
-//
-//	v.xy.data[0] = 99;
-//	REQUIRE(v.x == 99);
-//}
+TEST_CASE("union member access")
+{
+	vec2 v;
+
+	v.x = 42;
+	v.y = 43;
+	v.r = 44;
+
+	REQUIRE(v.x == 44);
+	REQUIRE(v[1] == 43);
+
+	v.xy.data[0] = 99;
+	REQUIRE(v.x == 99);
+}
 
 void inout_func(vec3 &inout) {}
 
@@ -222,27 +219,25 @@ TEST_CASE("spec::Par_5_5__Vector_and_Scalar_Components_and_Length")
 	}
 
 	{
-//TODO: implement
-		//vec4 pos = vec4(1.0, 2.0, 3.0, 4.0);
-		//vec4 swiz = pos.wzyx;
-		//REQUIRE(swiz.x == Approx(4.f));
-		//REQUIRE(swiz.y == Approx(3.f));
-		//REQUIRE(swiz.z == Approx(2.f));
-		//REQUIRE(swiz.w == Approx(1.f));
-		//vec4 dup = pos.xxyy;
-		//REQUIRE(dup.x == Approx(1.f));
-		//REQUIRE(dup.y == Approx(1.f));
-		//REQUIRE(dup.z == Approx(2.f));
-		//REQUIRE(dup.w == Approx(2.f));
+		vec4 pos = vec4(1.0, 2.0, 3.0, 4.0);
+		vec4 swiz = pos.wzyx;
+		REQUIRE(swiz.x == Approx(4.f));
+		REQUIRE(swiz.y == Approx(3.f));
+		REQUIRE(swiz.z == Approx(2.f));
+		REQUIRE(swiz.w == Approx(1.f));
+		vec4 dup = pos.xxyy;
+		REQUIRE(dup.x == Approx(1.f));
+		REQUIRE(dup.y == Approx(1.f));
+		REQUIRE(dup.z == Approx(2.f));
+		REQUIRE(dup.w == Approx(2.f));
 		//float f = 1.2;
 		// vec4 dup = f.xxxx; // dup = (1.2, 1.2, 1.2, 1.2) <-- THIS DOES NOT WORK
 	}
 
 	{
 		vec4 pos = vec4(1.0, 2.0, 3.0, 4.0);
-//TODO: fix
-	//	pos.xw = vec2(5.0, 6.0);
-	//	pos.wx = vec2(7.0, 8.0);
+		pos.xw = vec2(5.0, 6.0);
+		pos.wx = vec2(7.0, 8.0);
 		//pos.xx = vec2(3.0, 4.0); // illegal - 'x' used twice
 		//pos.xy = vec3(1.0, 2.0, 3.0); // illegal - mismatch between vec2 and vec3
 	}

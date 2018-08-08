@@ -3,18 +3,14 @@
 namespace swizzle { namespace detail
 {
 
-template<
-    size_t Begin, 
-    size_t End>
+template<size_t Begin, size_t End>
 struct static_for
 {
 	template<class Func>
-	constexpr void operator ()(Func &&f) //TODO: constrain with `enable_if callable`
+	constexpr void operator ()(Func &&f)
 	{
 		f(Begin);
-
-		static_for<Begin + 1, End>()(
-			std::forward<Func>(f));
+		static_for<Begin + 1, End>()(std::forward<Func>(f));
 	}
 };
 

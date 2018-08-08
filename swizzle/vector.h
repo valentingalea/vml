@@ -25,7 +25,7 @@ struct vector_base_selector
 		// .xy is vec2 that is part of a vec3
 		// .xy is also vec2 but part of a vec4
 		// they need to be same underlying type
-		using type = detail::swizzler<vector<T, sizeof...(indices)>, T, indices...>;
+		using type = detail::swizzler<vector<T, sizeof...(indices)>, T, N, indices...>;
 	};
 
 	template<size_t x>

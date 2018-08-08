@@ -1,4 +1,4 @@
-//#include <cstdio>
+#include <cstdio>
 //#include <cmath>
 
 #include "swizzle/vector.h"
@@ -13,6 +13,8 @@ typedef swizzle::vector<int, 2> ivec2;
 int main ()
 {
 	auto v = vec3(1, vec2(2, 3));
+	vec2 s = v.xx;
+	v.xy = s;
 
 	return 0;
 }
