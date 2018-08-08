@@ -1,5 +1,8 @@
 #pragma once
 
+// stupid fix for C++17 on c4droid
+#define throw(...)
+
 #include <algorithm>
 
 #include "detail/static_for.h"

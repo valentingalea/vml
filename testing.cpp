@@ -1,3 +1,4 @@
+#define CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS
 #define CATCH_CONFIG_MAIN // https://github.com/catchorg/Catch2/blob/master/docs/configuration.md#main-implementation
 #define CATCH_CONFIG_FAST_COMPILE // https://github.com/catchorg/Catch2/blob/master/docs/configuration.md#catch_config_fast_compile
 #include "catch.hpp"

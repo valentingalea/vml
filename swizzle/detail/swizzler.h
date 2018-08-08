@@ -32,14 +32,14 @@ struct swizzler
 	}
 
 private:
-	template<typename... indices>
-	void assign_across(vector_type &vec, size_t i, indices ...swizz_i) const
+	template<typename... Indices>
+	void assign_across(vector_type &vec, size_t i, Indices ...swizz_i) const
 	{
 		((vec[i++] = data[swizz_i]), ...);
 	}
 
-	template<typename... indices>
-	void assign_across(const vector_type &vec, size_t i, indices ...swizz_i)
+	template<typename... Indices>
+	void assign_across(const vector_type &vec, size_t i, Indices ...swizz_i)
 	{
 		((data[swizz_i] = vec[i++]), ...);
 	}
