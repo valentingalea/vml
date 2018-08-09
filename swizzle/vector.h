@@ -37,6 +37,18 @@ struct vector_base_selector
 	using base_type = vector_base<T, N, swizzler_wrapper_factory>;
 };
 
+template <class T>
+auto decay(T&& t) -> decltype(t.decay())
+{
+	return t.decay();
+}
+
+template <class T>
+typename std::enable_if_t<std::is_scalar_v<typename std::remove_reference_t<T>>, T> decay(T&& t)
+{
+	return t;
+}
+
 } // namespace util
 
 template<typename T, size_t N>
@@ -46,6 +58,7 @@ struct vector
 	using scalar_type = T;
 	using vector_type = vector<T, N>;
 	using base_type = typename util::vector_base_selector<T, N>::base_type;
+	using decay_type = typename std::conditional_t<N == 1, scalar_type, vector>;
 
 	// bring in scope the union member
 	using base_type::data;
@@ -70,7 +83,7 @@ struct vector
 		static_assert((sizeof...(args) <= N), "mismatch number of vector init arguments");
 
 		size_t i = 0;
-		(construct_at_index(i, std::forward<S>(args)), ...);
+		(construct_at_index(i, util::decay(std::forward<S>(args))), ...);
 	}
 
 	scalar_type const operator[](size_t i) const
@@ -81,6 +94,11 @@ struct vector
 	scalar_type& operator[](size_t i)
 	{
 		return data[i];
+	}
+
+	decay_type decay() const
+	{
+		return static_cast<const decay_type&>(*this);
 	}
 
 private:

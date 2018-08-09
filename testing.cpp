@@ -106,12 +106,12 @@ TEST_CASE("swizzle construct", "[vec2][vec3]")
 	//}
 
 //TODO: implement
-	//SECTION("swizzle implicit ctor") {
-	//	ivec3 rep(v.xy, 42);
-	//	REQUIRE(rep.x == 1);
-	//	REQUIRE(rep.y == 2);
-	//	REQUIRE(rep.z == 42);
-	//}
+	SECTION("swizzle implicit ctor") {
+		ivec3 rep(v.xy, 42);
+		REQUIRE(rep.x == 1);
+		REQUIRE(rep.y == 2);
+		REQUIRE(rep.z == 42);
+	}
 }
 
 TEST_CASE("lvalues", "[vec2][vec3]")
