@@ -117,7 +117,7 @@ TEST_CASE("swizzle construct", "[vec2][vec3]")
 TEST_CASE("lvalues", "[vec2][vec3]")
 {
 	ivec3 _3(101, 102, 103);
-	ivec2 _2;
+	ivec2 _2(11, 12);
 
 	SECTION("vec2 from vec3 swizzle") {
 		_2.xy = _3.xy;
@@ -127,11 +127,14 @@ TEST_CASE("lvalues", "[vec2][vec3]")
 
 	SECTION("vec3 swizzle from vec2") {
 		_3.xy = _2;
-		REQUIRE(_3.x == 0);
-		REQUIRE(_3.y == 0);
+		REQUIRE(_3.x == 11);
+		REQUIRE(_3.y == 12);
 	}
 	SECTION("vec3 from single component") {
 		_3.xyz = _2.x;
+		REQUIRE(_3.x == 11);
+		REQUIRE(_3.y == 11);
+		REQUIRE(_3.z == 11);
 	}
 }
 
