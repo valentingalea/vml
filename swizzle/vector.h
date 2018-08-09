@@ -44,7 +44,10 @@ auto decay(T&& t) -> decltype(t.decay())
 }
 
 template <class T>
-typename std::enable_if_t<std::is_scalar_v<typename std::remove_reference_t<T>>, T> decay(T&& t)
+typename std::enable_if<
+	std::is_scalar<typename std::remove_reference<T>::type >::value,
+	T>::type
+decay(T&& t)
 {
 	return t;
 }
