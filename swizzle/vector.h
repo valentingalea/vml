@@ -4,6 +4,8 @@
 
 #include "detail/static_for.h"
 #include "detail/swizzler.h"
+#include "detail/functions.h"
+
 #include "vector_base.h"
 
 namespace swizzle {
@@ -55,8 +57,9 @@ decay(T&& t)
 } // namespace util
 
 template<typename T, size_t N>
-struct vector
-	: public util::vector_base_selector<T, N>::base_type
+struct vector :
+	public util::vector_base_selector<T, N>::base_type,
+	public detail::builtin_func_lib<vector<T, N>, T, N>
 {
 	using scalar_type = T;
 	using vector_type = vector<T, N>;
@@ -104,13 +107,13 @@ struct vector
 		return static_cast<const decay_type&>(*this);
 	}
 
-private:
 	template<class Func>
-	constexpr void iterate(Func &&f)
+	static constexpr void iterate(Func &&f)
 	{
 		detail::static_for<0, N>()(std::forward<Func>(f));
 	}
 
+private:
 	void construct_at_index(size_t &i, scalar_type arg)
 	{
 		data[i++] = arg;
