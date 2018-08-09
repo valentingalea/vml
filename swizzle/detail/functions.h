@@ -30,6 +30,17 @@ struct builtin_func_lib
 
 		return sum;
 	}
+
+	friend vector_type cross(const vector_type &a, const vector_type &b)
+	{
+		static_assert(N == 3, "cross product only works for vec3");
+
+		return vector_type(
+			a.y * b.z - a.z * b.y,
+			a.z * b.x - a.x * b.z,
+			a.x * b.y - a.y * b.x
+		);
+	}
 };
 
 } } // namespace swizzle::detail

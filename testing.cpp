@@ -147,6 +147,22 @@ TEST_CASE("lvalues", "[vec2][vec3]")
 //	REQUIRE(p.y == Approx(-1.f));
 //}
 
+TEST_CASE("builtin functions")
+{
+	vec3 v = vec3(1.f, 0.f, 0.f);
+	REQUIRE(length(v) == Approx(1.f));
+
+	float d = dot(v.xzz, v.zxz);
+	REQUIRE(d == Approx(0.f));
+	d = dot(v.xzz, v);
+	REQUIRE(d == Approx(1.f));
+
+	vec3 c = cross(v.xzz, v.zzx);
+	REQUIRE(c.x == Approx(0.f));
+	REQUIRE(c.y == Approx(-1.f));
+	REQUIRE(c.z == Approx(0.f));
+}
+
 TEST_CASE("union member access")
 {
 	vec2 v;
