@@ -138,14 +138,13 @@ TEST_CASE("lvalues", "[vec2][vec3]")
 	}
 }
 
-//TODO: implement
-//TEST_CASE("operators", "[vec2]")
-//{
-//	vec2 uv;
-//	vec2 p = 2.f * uv - 1.f;
-//	REQUIRE(p.x == Approx(-1.f));
-//	REQUIRE(p.y == Approx(-1.f));
-//}
+TEST_CASE("operators", "[vec2]")
+{
+	vec2 uv;
+	vec2 p = 2.f * uv - 1.f;
+	REQUIRE(p.x == Approx(-1.f));
+	REQUIRE(p.y == Approx(-1.f));
+}
 
 TEST_CASE("builtin functions")
 {

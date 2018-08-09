@@ -5,6 +5,7 @@
 #include "detail/static_for.h"
 #include "detail/swizzler.h"
 #include "detail/functions.h"
+#include "detail/binary_ops.h"
 
 #include "vector_base.h"
 
@@ -56,10 +57,14 @@ decay(T&& t)
 
 } // namespace util
 
-template<typename T, size_t N>
-struct vector :
+template<typename T, size_t N> struct
+#ifdef _MSC_VER
+__declspec(empty_bases) // https://blogs.msdn.microsoft.com/vcblog/2016/03/30/optimizing-the-layout-of-empty-base-classes-in-vs2015-update-2-3/
+#endif
+vector :
 	public util::vector_base_selector<T, N>::base_type,
-	public detail::builtin_func_lib<vector<T, N>, T, N>
+	public detail::builtin_func_lib<vector<T, N>, T, N>,
+	public detail::binary_vec_ops<vector<T, N>, T, N>
 {
 	using scalar_type = T;
 	using vector_type = vector<T, N>;
@@ -112,6 +117,8 @@ struct vector :
 	{
 		detail::static_for<0, N>()(std::forward<Func>(f));
 	}
+
+#include "detail/unary_ops.h"
 
 private:
 	void construct_at_index(size_t &i, scalar_type arg)

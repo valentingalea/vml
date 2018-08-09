@@ -14,10 +14,15 @@ typedef swizzle::vector<int, 2> ivec2;
 
 int main ()
 {
-	auto axis_x = vec3(1.f, 0.f, 0.f);
-	auto axis_y = vec3(0.f, 1.f, 0.f);
+	auto v = vec3(1.f, 0.f, 0.f);
 
-	auto d = dot(axis_x, axis_y);
+	auto d = dot(v.xzz, v.zxz);
+	d = dot(v.xzz, v);
+
+	v += d;
+	v *= v.yyy;
+
+	auto n = v + v.zzz;
 
 	return 0;
 }

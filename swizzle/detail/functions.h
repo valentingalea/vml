@@ -16,7 +16,7 @@ struct builtin_func_lib
 	friend vector_type normalize(const vector_type &v)
 	{
 		vector_type out = v;
-	//	out /= length(v);
+		out /= length(v);
 		return out;
 	}
 
