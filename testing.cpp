@@ -1,18 +1,20 @@
-// stupid for C++17 on C4droid
+#ifdef C4DROID
+// stupid fixes for C++17 on C4droid
 #define _SILENCE_CXX17_UNCAUGHT_EXCEPTION_DEPRECATION_WARNING
 #define CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS
+#define throw(...)
+#endif
 
 #define CATCH_CONFIG_MAIN // https://github.com/catchorg/Catch2/blob/master/docs/configuration.md#main-implementation
 #define CATCH_CONFIG_FAST_COMPILE // https://github.com/catchorg/Catch2/blob/master/docs/configuration.md#catch_config_fast_compile
 #include "catch.hpp"
 
+#ifdef _MSC_VER
 // turn off for the purposes of these tests
 // warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
 #pragma warning(disable: 4244)
+#endif
 
-
-// stupid fix for C++17 on C4droid
-#define throw(...)
 #include "swizzle/vector.h"
 
 typedef swizzle::vector<double, 4> dvec4;
