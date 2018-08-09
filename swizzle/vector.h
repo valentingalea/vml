@@ -1,8 +1,5 @@
 #pragma once
 
-// stupid fix for C++17 on c4droid
-#define throw(...)
-
 #include <algorithm>
 
 #include "detail/static_for.h"
@@ -34,7 +31,7 @@ struct vector_base_selector
 	template<size_t x>
 	struct swizzler_wrapper_factory<x>
 	{
-		using type = T;
+		using type = T; // one component vectors are just scalars
 	};
 
 	using base_type = vector_base<T, N, swizzler_wrapper_factory>;
@@ -70,26 +67,10 @@ struct vector
 	template<typename... S>
 	explicit vector(S... args)
 	{
-		static_assert(
-			(sizeof...(args) <= N),
-			"mismatch number of vector init arguments");
-
-		// dummy forwarding structure
-		struct constructor
-		{
-			inline constructor(...) {}
-		};
+		static_assert((sizeof...(args) <= N), "mismatch number of vector init arguments");
 
 		size_t i = 0;
-		constructor(
-			// - the use of {} init list guarantees left to right
-			// processing order
-			// - the ... will basically expand and paste in 
-			// each function argument
-			// - which in turn we feed to a special function
-			// that overloads for every vector element type
-			{ construct_at_index(i, std::forward<S>(args)) ... }
-		);
+		(construct_at_index(i, std::forward<S>(args)), ...);
 	}
 
 	scalar_type const operator[](size_t i) const
@@ -109,21 +90,18 @@ private:
 		detail::static_for<0, N>()(std::forward<Func>(f));
 	}
 
-	bool construct_at_index(size_t &i, scalar_type arg)
+	void construct_at_index(size_t &i, scalar_type arg)
 	{
 		data[i++] = arg;
-		return true; // dummy return
-					 // just because it wil be called in a {} init list
 	}
 
 	template<typename Other, size_t Other_N>
-	bool construct_at_index(size_t &i, vector<Other, Other_N> &&arg)
+	void construct_at_index(size_t &i, vector<Other, Other_N> &&arg)
 	{
 		constexpr auto count = std::min(N, Other_N);
 		detail::static_for<0, count>()([&](size_t j) {
 			data[i++] = arg.data[j];
 		});
-		return true;
 	}
 };
 

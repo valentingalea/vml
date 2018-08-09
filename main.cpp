@@ -1,5 +1,7 @@
 #include <cstdio>
-//#include <cmath>
+
+// stupid fix for C++17 on c4droid
+#define throw(...)
 
 #include "swizzle/vector.h"
 
