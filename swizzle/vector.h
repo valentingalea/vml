@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include "detail/static_for.h"
+#include "detail/util.h"
 #include "detail/swizzler.h"
 #include "detail/functions.h"
 #include "detail/binary_ops.h"
@@ -40,21 +40,6 @@ struct vector_base_selector
 	using base_type = vector_base<T, N, swizzler_wrapper_factory>;
 };
 
-template <class T>
-auto decay(T&& t) -> decltype(t.decay())
-{
-	return t.decay();
-}
-
-template <class T>
-typename std::enable_if<
-	std::is_scalar<typename std::remove_reference<T>::type >::value,
-	T>::type
-decay(T&& t)
-{
-	return t;
-}
-
 } // namespace util
 
 template<typename T, size_t N> struct
@@ -91,10 +76,10 @@ vector :
 	template<typename... S>
 	explicit vector(S... args)
 	{
-		static_assert((sizeof...(args) <= N), "mismatch number of vector init arguments");
+		static_assert((sizeof...(args) <= N), "too many arguments");
 
-		size_t i = 0;
-		(construct_at_index(i, util::decay(std::forward<S>(args))), ...);
+		size_t i = 0; //TODO: get rid of this and introduce template get_size
+		(construct_at_index(i, detail::decay(std::forward<S>(args))), ...);
 	}
 
 	scalar_type const operator[](size_t i) const
@@ -119,6 +104,8 @@ vector :
 	}
 
 #include "detail/unary_ops.h"
+
+	//TODO: add matrix multiply
 
 private:
 	void construct_at_index(size_t &i, scalar_type arg)

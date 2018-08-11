@@ -23,4 +23,19 @@ struct static_for<N, N>
 	}
 };
 
+template <class T>
+auto decay(T&& t) -> decltype(t.decay())
+{
+	return t.decay();
+}
+
+template <class T>
+typename std::enable_if<
+	std::is_scalar<typename std::remove_reference<T>::type >::value,
+	T>::type
+	decay(T&& t)
+{
+	return t;
+}
+
 } }
