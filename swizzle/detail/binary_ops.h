@@ -26,6 +26,8 @@ struct binary_vec_ops
 	DEF_OP_BINARY(*, *=, scalar_type, const vector_type &)
 	DEF_OP_BINARY(/ , /=, const vector_type &, scalar_type)
 	DEF_OP_BINARY(/ , /=, scalar_type, const vector_type &)
+
+#undef DEF_OP_BINARY
 };
 
 } } // namespace swizzle::detail
