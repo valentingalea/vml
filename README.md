@@ -1,4 +1,4 @@
 mathlib
 =======
 
-c++11 glsl flavour vector and matrix math lib
+C++17 GLSL-shader flavour vector and matrix math lib
