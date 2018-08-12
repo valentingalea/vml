@@ -9,7 +9,8 @@
       "name": "testing.exe",
       "args": [
         "--success",
-        "--wait-for-keypress exit"
+        "--wait-for-keypress exit",
+        "--abort"
       ]
     }
   ]
