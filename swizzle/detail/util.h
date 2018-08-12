@@ -38,4 +38,10 @@ typename std::enable_if<
 	return t;
 }
 
+template<typename V, typename... Ts>
+constexpr bool converts_to()
+{
+	return (std::is_convertible<Ts, V>::value || ...);
+}
+
 } }

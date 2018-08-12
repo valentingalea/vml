@@ -9,7 +9,7 @@ struct binary_vec_ops
 #define DEF_OP_BINARY(op, impl_op, a_type, b_type)	\
 	friend vector_type operator op(a_type a, b_type b) \
 	{												\
-		vector_type out = a;						\
+		auto out = vector_type(a);					\
 		out impl_op b;								\
 		return out;									\
 	}

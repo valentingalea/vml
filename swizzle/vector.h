@@ -66,20 +66,24 @@ vector :
 		});
 	}
 
-	vector(scalar_type s)
+	explicit vector(scalar_type s)
 	{
 		iterate([s, this](size_t i) {
 			data[i] = s;
 		});
 	}
 
-	template<typename... S>
-	explicit vector(S... args)
+	template<typename... Args, 
+		class = typename std::enable_if<
+			(sizeof... (Args) >= 2)
+			|| ((sizeof... (Args) == 1) && detail::converts_to<vector_type, Args...>())
+		>::type>
+	explicit vector(Args&&... args)
 	{
 		static_assert((sizeof...(args) <= N), "too many arguments");
 
 		size_t i = 0; //TODO: get rid of this and introduce template get_size
-		(construct_at_index(i, detail::decay(std::forward<S>(args))), ...);
+		(construct_at_index(i, detail::decay(std::forward<Args>(args))), ...);
 	}
 
 	scalar_type const operator[](size_t i) const
@@ -114,7 +118,7 @@ private:
 	}
 
 	template<typename Other, size_t Other_N>
-	void construct_at_index(size_t &i, vector<Other, Other_N> &&arg)
+	void construct_at_index(size_t &i, const vector<Other, Other_N> &arg)
 	{
 		constexpr auto count = std::min(N, Other_N);
 		detail::static_for<0, count>()([&](size_t j) {
