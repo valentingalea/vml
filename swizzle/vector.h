@@ -73,16 +73,24 @@ vector :
 		});
 	}
 
-	template<typename... Args, 
+	vector(const vector_type &) = default;
+	vector(vector_type &&) = default;
+
+	template<typename A0, typename... Args,
 		class = typename std::enable_if<
-			(sizeof... (Args) >= 2)
-			|| ((sizeof... (Args) == 1) && detail::converts_to<vector_type, Args...>())
+			((sizeof... (Args) >= 1) ||
+			((sizeof... (Args) == 0) && !std::is_scalar_v<A0>))
 		>::type>
-	explicit vector(Args&&... args)
+	explicit vector(A0&& a0, Args&&... args)
 	{
-		static_assert((sizeof...(args) <= N), "too many arguments");
+		static_assert((sizeof...(args) < N), "too many arguments");
 
 		size_t i = 0; //TODO: get rid of this and introduce template get_size
+
+		// consume the first one
+		construct_at_index(i, detail::decay(std::forward<A0>(a0)));
+
+		// consume the rest, if any
 		(construct_at_index(i, detail::decay(std::forward<Args>(args))), ...);
 	}
 

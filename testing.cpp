@@ -279,9 +279,9 @@ TEST_CASE("spec::Par_5_4_2__Constructors")
 					// (vec4(_mat2)); // the vec4 is column 0 followed by column 1 <-- THIS DOES NOT WORK
 	vec2(_float, _float); // initializes a vec2 with 2 floats
 	ivec3(_int, _int, _int); // initializes an ivec3 with 3 ints
-//TOOD: fix back these
-//	(vec2(_vec3)); // drops the third component of a vec3
-//	(vec3(_vec4)); // drops the fourth component of a vec4
+
+	(vec2(_vec3)); // drops the third component of a vec3
+	(vec3(_vec4)); // drops the fourth component of a vec4
 	vec3(_vec2, _float); // vec3.x = vec2.x, vec3.y = vec2.y, vec3.z = float
 	vec3(_float, _vec2); // vec3.x = float, vec3.y = vec2.x, vec3.z = vec2.y
 	vec4(_vec3, _float);
@@ -290,7 +290,7 @@ TEST_CASE("spec::Par_5_4_2__Constructors")
 
 	vec4 color = vec4(0.0, 1.0, 0.0, 1.0);
 	vec4 rgba = vec4(1.0); // sets each component to 1.0
-//	vec3 rgb = vec3(color); // drop the 4th component
+	vec3 rgb = vec3(color); // drop the 4th component
 
 	(mat2(_float));
 	(mat3(_float));
@@ -317,9 +317,9 @@ TEST_CASE("spec::Par_5_4_2__Constructors")
 	dmat2x4(_dvec3, _double, // first column
 		_double, _dvec3); // second column
 
-	//REQUIRE(rgb.x == Approx(0.f));
-	//REQUIRE(rgb.y == Approx(1.f));
-	//REQUIRE(rgb.z == Approx(0.f));
+	REQUIRE(rgb.x == Approx(0.f));
+	REQUIRE(rgb.y == Approx(1.f));
+	REQUIRE(rgb.z == Approx(0.f));
 }
 
 TEST_CASE("spec::Par_5_5__Vector_and_Scalar_Components_and_Length")
