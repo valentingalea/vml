@@ -17,20 +17,23 @@ struct matrix
 
 	matrix() = default; // zeroes all data
 
-	matrix(scalar_type s) // fill in diagonally
+	explicit matrix(scalar_type s) // fill in diagonally
 	{
 		detail::static_for<0, std::min(N, M)>()([&](size_t i) {
 			data[i][i] = s;
 		});
 	}
 
-	template<typename... S>
-	explicit matrix(S... args)
+	template<typename... Args,
+		class = typename std::enable_if<
+			(sizeof... (Args) >= 2)
+		>::type>
+	explicit matrix(Args&&... args)
 	{
 		static_assert((sizeof...(args) <= N*M), "too many arguments");
 
 		size_t i = 0; //TODO: get rid of this
-		(construct_at_index(i, detail::decay(std::forward<S>(args))), ...);
+		(construct_at_index(i, detail::decay(std::forward<Args>(args))), ...);
 	}
 
 	//TODO: constructor from smaller matrices 
