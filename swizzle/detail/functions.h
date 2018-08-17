@@ -5,7 +5,7 @@
 namespace swizzle { namespace detail
 {
 
-template<typename vector_type, typename scalar_type, size_t N>
+template<typename vector_type, typename scalar_type, size_t... Ns>
 struct builtin_func_lib
 {
 	friend scalar_type length(const vector_type &v)
@@ -20,20 +20,21 @@ struct builtin_func_lib
 		return out;
 	}
 
-	friend scalar_type dot(const vector_type &a, const vector_type &b)
+	scalar_type dot(const vector_type &a, const vector_type &b) const
 	{
 		scalar_type sum = 0;
-
-		vector_type::iterate([&](size_t i) {
-			sum += a[i] * b[i];
-		});
-
+		((sum += a[Ns] * b[Ns]), ...);
 		return sum;
+	}
+
+	friend scalar_type dot(const vector_type &a, const vector_type &b)
+	{
+		return a.dot(a, b);
 	}
 
 	friend vector_type cross(const vector_type &a, const vector_type &b)
 	{
-		static_assert(N == 3, "cross product only works for vec3");
+		static_assert(vector_type::num_components == 3, "cross product only works for vec3");
 
 		return vector_type(
 			a.y * b.z - a.z * b.y,
