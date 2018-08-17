@@ -16,6 +16,27 @@ struct vector;
 
 namespace util {
 
+template<typename, size_t>
+struct vec_eq;
+
+template<typename T>
+struct vec_eq<T, 2>
+{
+	using type = vector<T, 0, 1>;
+};
+
+template<typename T>
+struct vec_eq<T, 3>
+{
+	using type = vector<T, 0, 1, 2>;
+};
+
+template<typename T>
+struct vec_eq<T, 4>
+{
+	using type = vector<T, 0, 1, 2, 3>;
+};
+
 template<typename T, size_t... Ns>
 struct vector_base_selector
 {
@@ -28,7 +49,7 @@ struct vector_base_selector
 		// .xy is vec2 that is part of a vec3
 		// .xy is also vec2 but part of a vec4
 		// they need to be same underlying type
-		using type = detail::swizzler<vector<T, Ns...>, T, sizeof...(indices), indices...>;
+		using type = detail::swizzler<typename vec_eq<T, sizeof...(indices)>::type, T, sizeof...(Ns), indices...>;
 	};
 
 	template<size_t x>
@@ -48,13 +69,15 @@ __declspec(empty_bases) // https://blogs.msdn.microsoft.com/vcblog/2016/03/30/op
 #endif
 vector :
 	public util::vector_base_selector<T, Ns...>::base_type,
-	public detail::builtin_func_lib<vector<T, Ns...>, T, Ns...>
-//	public detail::binary_vec_ops<vector<T, N>, T, N>
+	public detail::builtin_func_lib<vector<T, Ns...>, T, Ns...>,
+	public detail::binary_vec_ops<vector<T, Ns...>, T>
 {
+	static constexpr auto num_components = sizeof...(Ns);
+
 	using scalar_type = T;
 	using vector_type = vector<T, Ns...>;
 	using base_type = typename util::vector_base_selector<T, Ns...>::base_type;
-	using decay_type = vector_type;
+	using decay_type = vector_type; // typename util::vec_eq<T, num_components>::type;
 
 	// bring in scope the union member
 	using base_type::data;
@@ -79,7 +102,7 @@ vector :
 		>::type>
 	explicit vector(A0&& a0, Args&&... args)
 	{
-		static_assert((sizeof...(args) < N), "too many arguments");
+	//	static_assert((sizeof...(args) < N), "too many arguments");
 
 		size_t i = 0; //TODO: get rid of this and introduce template get_size
 
@@ -115,10 +138,10 @@ private:
 		data[i++] = arg;
 	}
 
-	template<typename Other, size_t Other_N>
-	void construct_at_index(size_t &i, const vector<Other, Other_N> &arg)
+	template<typename Other, size_t... Other_Ns>
+	void construct_at_index(size_t &i, const vector<Other, Other_Ns...> &arg)
 	{
-		constexpr auto count = std::min(N, Other_N);
+		constexpr auto count = std::min(num_components, vector<Other, Other_Ns...>::num_components);
 		detail::static_for<0, count>()([&](size_t j) {
 			data[i++] = arg.data[j];
 		});

@@ -10,7 +10,7 @@ struct builtin_func_lib
 {
 	friend scalar_type length(const vector_type &v)
 	{
-		return std::sqrt(dot(v, v));
+		return std::sqrt(v.dot(v, v));
 	}
 
 	friend vector_type normalize(const vector_type &v)

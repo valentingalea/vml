@@ -3,7 +3,7 @@
 namespace swizzle { namespace detail
 {
 
-template<typename vector_type, typename scalar_type, size_t N>
+template<typename vector_type, typename scalar_type>
 struct binary_vec_ops
 {
 #define DEF_OP_BINARY(op, impl_op, a_type, b_type)	\
