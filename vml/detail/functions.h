@@ -17,7 +17,7 @@ struct builtin_func_lib
 	using vector_type = vector<scalar_type, Ns...>;
 	using vector_arg_type = const vector_type &;
 
-	friend scalar_type length(const vector_type &v)
+	friend scalar_type length(vector_arg_type v)
 	{
 		return std::sqrt(v.dot(v, v));
 	}
@@ -27,26 +27,26 @@ struct builtin_func_lib
 		return length(p0 - p1);
 	}
 
-	friend vector_type normalize(const vector_type &v)
+	friend vector_type normalize(vector_arg_type v)
 	{
 		vector_type out = v;
 		out /= length(v);
 		return out;
 	}
 
-	scalar_type dot(const vector_type &a, const vector_type &b) const
+	scalar_type dot(vector_arg_type a, vector_arg_type b) const // needs to be member otherwise fold expression doesn't work
 	{
 		scalar_type sum = 0;
-		((sum += a[Ns] * b[Ns]), ...);
+		((sum += a.data[Ns] * b.data[Ns]), ...);
 		return sum;
 	}
 
-	friend scalar_type dot(const vector_type &a, const vector_type &b)
+	friend scalar_type dot(vector_arg_type a, vector_arg_type b)
 	{
 		return a.dot(a, b);
 	}
 
-	friend vector_type cross(const vector_type &a, const vector_type &b)
+	friend vector_type cross(vector_arg_type a, vector_arg_type b)
 	{
 		static_assert(vector_type::num_components == 3, "cross product only works for vec3");
 
