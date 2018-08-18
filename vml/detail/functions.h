@@ -5,7 +5,7 @@
 namespace vml { namespace detail
 {
 
-template<typename vector_type, typename scalar_type, size_t... Ns>
+template<template<typename, size_t...> class vector, typename scalar_type, size_t... Ns>
 struct builtin_func_lib
 {
 #ifdef MSVC_VER
@@ -14,6 +14,7 @@ struct builtin_func_lib
 #define INL __attribute__((always_inline))
 #endif
 
+	using vector_type = vector<scalar_type, Ns...>;
 	using vector_arg_type = const vector_type &;
 
 	friend scalar_type length(const vector_type &v)
@@ -77,6 +78,62 @@ struct builtin_func_lib
 			return eta * I - (eta * N.dot(N, I) + sqrt(k)) * N;
 		}
 	}
+
+	using bool_vector_type = vector<bool, Ns...>;
+
+	friend bool_vector_type lessThan(vector_arg_type x, vector_arg_type y)
+	{
+		return bool_vector_type((x.data[Ns] < y.data[Ns])...);
+	}
+
+	friend bool_vector_type lessThanEqual(vector_arg_type x, vector_arg_type y)
+	{
+		return bool_vector_type((x.data[Ns] <= y.data[Ns])...);
+	}
+
+	friend bool_vector_type greaterThan(vector_arg_type x, vector_arg_type y)
+	{
+		return bool_vector_type((x.data[Ns] > y.data[Ns])...);
+	}
+
+	friend bool_vector_type greaterThanEqual(vector_arg_type x, vector_arg_type y)
+	{
+		return bool_vector_type((x.data[Ns] >= y.data[Ns])...);
+	}
+
+	friend bool_vector_type equal(vector_arg_type x, vector_arg_type y)
+	{
+		return bool_vector_type((x.data[Ns] == y.data[Ns])...);
+	}
+
+	friend bool_vector_type notEqual(vector_arg_type x, vector_arg_type y)
+	{
+		return bool_vector_type((x.data[Ns] != y.data[Ns])...);
+	}
+#if 0 //TODO: MSVC bug
+	bool any(const bool_vector_type &b) const
+	{
+		return (... || b.data[Ns]);
+	}
+	friend bool any(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, std::false_type>::type b)
+	{
+		return b.any(b); // MSVC: doesn't see the pack expansion if tried here
+	}
+
+	bool all(const bool_vector_type &b) const
+	{
+		return (... && b.data[Ns]);
+	}
+	friend bool all(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, std::false_type>::type b)
+	{
+		return b.all(b);
+	}
+
+	friend bool_vector_type _not(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, std::false_type>::type b)
+	{
+		return bool_vector_type((!b.data[Ns])...);
+	}
+#endif
 
 #undef INL
 };

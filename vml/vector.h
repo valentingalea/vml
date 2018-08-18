@@ -70,7 +70,7 @@ __declspec(empty_bases) // https://blogs.msdn.microsoft.com/vcblog/2016/03/30/op
 #endif
 vector :
 	public util::vector_base_selector<T, Ns...>::base_type,
-	public detail::builtin_func_lib<vector<T, Ns...>, T, Ns...>,
+	public detail::builtin_func_lib<vector, T, Ns...>,
 	public detail::binary_vec_ops<vector<T, Ns...>, T>
 {
 	static constexpr auto num_components = sizeof...(Ns);

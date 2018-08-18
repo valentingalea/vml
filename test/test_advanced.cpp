@@ -254,6 +254,23 @@ TEST_CASE("builtin functions")
 		auto ffwd = faceforward(N, I, vec3(1.f, 0.f, 0.f));
 		REQUIRE(ffwd.y == Approx(-1.f));
 	}
+#if 0 //TODO: disabled because of MSVC
+	SECTION("logical")
+	{
+		auto a = vec3(1, 2, 3);
+		auto b = vec3(4, 2, 3);
+
+		auto lT = lessThan(a, b);
+		REQUIRE(lT.x == true);
+		REQUIRE(lT.y == false);
+		REQUIRE(lT.z == false);
+
+		auto neq = _not(equal(a, b));
+		REQUIRE(neq.x == true);
+		REQUIRE(neq.y == false);
+		REQUIRE(neq.z == false);
+	}
+#endif
 }
 
 TEST_CASE("union member access")
