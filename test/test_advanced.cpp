@@ -231,6 +231,27 @@ TEST_CASE("builtin functions")
 		REQUIRE(c.z == Approx(0.f));
 	}
 
+	SECTION("common")
+	{
+		auto a = ivec3(1, 4, 5);
+		auto b = ivec3(2, 3, 4);
+
+		auto mm = min(a, b);
+		REQUIRE(mm.x == 1);
+		REQUIRE(mm.y == 3);
+		REQUIRE(mm.z == 4);
+
+		mm = max(a, b);
+		REQUIRE(mm.x == 2);
+		REQUIRE(mm.y == 4);
+		REQUIRE(mm.z == 5);
+
+		auto c = clamp(b, 1, 3);
+		REQUIRE(c.x == 2);
+		REQUIRE(c.y == 3);
+		REQUIRE(c.z == 3);
+	}
+
 	SECTION("geometry")
 	{
 		auto zero = vec3();

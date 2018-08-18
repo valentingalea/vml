@@ -17,6 +17,64 @@ struct builtin_func_lib
 	using vector_type = vector<scalar_type, Ns...>;
 	using vector_arg_type = const vector_type &;
 
+//
+// 8.1 Angle and Trigonometry Function
+//
+	//TODO: for now <cmath> stuff should be enough for most purposes
+	// radians degrees
+	// sin cos tan
+	// asin acos atan(y, x) atan(y/x)
+	// sinh cosh tanh
+	// asinh acosh atanh
+
+//
+// 8.2 Exponential Functions
+//
+	//TODO: for now <cmath> stuff should be enough for most purposes
+	// pow exp log
+	// exp2 log2
+	// sqrt inversesqrt
+
+//
+// 8.3 Common Functions
+//
+	//TODO:
+	// abs sign
+	// floor trunc round roundEven ceil fract mod modf
+	
+	friend vector_type min(vector_arg_type left, vector_arg_type right)
+	{
+		return vector_type((left.data[Ns] < right.data[Ns] ? left.data[Ns] : right.data[Ns])...);
+	}
+
+	friend vector_type min(vector_arg_type left, scalar_type right)
+	{
+		return vector_type((left.data[Ns] < right ? left.data[Ns] : right)...);
+	}
+
+	friend vector_type max(vector_arg_type left, vector_arg_type right)
+	{
+		return vector_type((left.data[Ns] > right.data[Ns] ? left.data[Ns] : right.data[Ns])...);
+	}
+
+	friend vector_type max(vector_arg_type left, scalar_type right)
+	{
+		return vector_type((left.data[Ns] > right ? left.data[Ns] : right)...);
+	}
+
+	friend vector_type clamp(vector_arg_type x, vector_arg_type minVal, vector_arg_type maxVal)
+	{
+		return min(max(x, minVal), maxVal);
+	}
+
+	friend vector_type clamp(vector_arg_type x, scalar_type minVal, scalar_type maxVal)
+	{
+		return min(max(x, minVal), maxVal);
+	}
+
+//
+// 8.5 Geometric functions
+//
 	friend scalar_type length(vector_arg_type v)
 	{
 		return std::sqrt(v.dot(v, v));
@@ -79,6 +137,9 @@ struct builtin_func_lib
 		}
 	}
 
+//
+// 8.7 Vector Relational Functions
+//
 	using bool_vector_type = vector<bool, Ns...>;
 
 	friend bool_vector_type lessThan(vector_arg_type x, vector_arg_type y)
