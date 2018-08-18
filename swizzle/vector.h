@@ -17,22 +17,22 @@ struct vector;
 namespace util {
 
 template<typename, size_t>
-struct vec_eq;
+struct vec_equiv;
 
 template<typename T>
-struct vec_eq<T, 2>
+struct vec_equiv<T, 2>
 {
 	using type = vector<T, 0, 1>;
 };
 
 template<typename T>
-struct vec_eq<T, 3>
+struct vec_equiv<T, 3>
 {
 	using type = vector<T, 0, 1, 2>;
 };
 
 template<typename T>
-struct vec_eq<T, 4>
+struct vec_equiv<T, 4>
 {
 	using type = vector<T, 0, 1, 2, 3>;
 };
@@ -49,7 +49,8 @@ struct vector_base_selector
 		// .xy is vec2 that is part of a vec3
 		// .xy is also vec2 but part of a vec4
 		// they need to be same underlying type
-		using type = detail::swizzler<typename vec_eq<T, sizeof...(indices)>::type, T, sizeof...(Ns), indices...>;
+		using type = detail::swizzler<
+			typename vec_equiv<T, sizeof...(indices)>::type, T, sizeof...(Ns), indices...>;
 	};
 
 	template<size_t x>
@@ -77,7 +78,7 @@ vector :
 	using scalar_type = T;
 	using vector_type = vector<T, Ns...>;
 	using base_type = typename util::vector_base_selector<T, Ns...>::base_type;
-	using decay_type = vector_type; // typename util::vec_eq<T, num_components>::type;
+	using decay_type = vector_type; // typename util::vec_equiv<T, num_components>::type;
 
 	// bring in scope the union member
 	using base_type::data;
