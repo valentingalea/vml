@@ -13,7 +13,7 @@ DEF_OP_UNARY_SCALAR(/= )
 #define DEF_OP_UNARY_VECTOR(op)				\
 	vector_type& operator op(const vector_type &v) \
 	{										\
-		((data[Ns] op v[Ns]), ...);			\
+		((data[Ns] op v.data[Ns]), ...);	\
 		return *this;						\
 	}
 
