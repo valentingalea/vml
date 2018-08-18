@@ -215,18 +215,45 @@ TEST_CASE("operators", "[vec2]")
 
 TEST_CASE("builtin functions")
 {
-	vec3 v = vec3(1.f, 0.f, 0.f);
-	REQUIRE(length(v) == Approx(1.f));
+	SECTION("basic")
+	{
+		vec3 v = vec3(1.f, 0.f, 0.f);
+		REQUIRE(length(v) == Approx(1.f));
 
-	float d = dot(v.xzz, v.zxz);
-	REQUIRE(d == Approx(0.f));
-	d = dot(v.xzz, v);
-	REQUIRE(d == Approx(1.f));
+		float d = dot(v.xzz, v.zxz);
+		REQUIRE(d == Approx(0.f));
+		d = dot(v.xzz, v);
+		REQUIRE(d == Approx(1.f));
 
-	vec3 c = cross(v.xzz, v.zzx);
-	REQUIRE(c.x == Approx(0.f));
-	REQUIRE(c.y == Approx(-1.f));
-	REQUIRE(c.z == Approx(0.f));
+		vec3 c = cross(v.xzz, v.zzx);
+		REQUIRE(c.x == Approx(0.f));
+		REQUIRE(c.y == Approx(-1.f));
+		REQUIRE(c.z == Approx(0.f));
+	}
+
+	SECTION("geometry")
+	{
+		auto zero = vec3();
+		auto N = vec3(0.f, 1.f, 0.f);
+
+		auto I = normalize(vec3(1.f, 1.f, 0.f));
+		auto R = reflect(I, N);
+		REQUIRE(I.x == R.x);
+		REQUIRE(-I.y == R.y);
+
+		// from https://en.wikipedia.org/wiki/Snell%27s_law#Vector_form
+		auto Rr = refract(I, N, 0.9f);
+		REQUIRE(Rr.x == Approx(0.636396));
+		REQUIRE(Rr.y == Approx(-0.771362));
+
+		auto len = length(N);
+		REQUIRE(len == Approx(1.f));
+		len = distance(N, zero);
+		REQUIRE(len == Approx(1.f));
+
+		auto ffwd = faceforward(N, I, vec3(1.f, 0.f, 0.f));
+		REQUIRE(ffwd.y == Approx(-1.f));
+	}
 }
 
 TEST_CASE("union member access")

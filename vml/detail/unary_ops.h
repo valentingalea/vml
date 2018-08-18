@@ -25,4 +25,13 @@ DEF_OP_UNARY_VECTOR(/=)
 #undef DEF_OP_UNARY_SCALAR
 #undef DEF_OP_UNARY_VECTOR
 
-//TODO: add  ==, !=, -
+vector_type operator -() const
+{
+	vector_type v;
+	detail::static_for<0, num_components>()([&](size_t i) {
+		v[i] = -data[i];
+	});
+	return v;
+}
+
+//TODO: add  ==, !=
