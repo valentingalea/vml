@@ -99,11 +99,11 @@ vector :
 	template<typename A0, typename... Args,
 		class = typename std::enable_if<
 			((sizeof... (Args) >= 1) ||
-			((sizeof... (Args) == 0) && !std::is_scalar_v<A0>))
+			((sizeof... (Args) == 0) && !std::is_scalar<A0>::value))
 		>::type>
 	explicit vector(A0&& a0, Args&&... args)
 	{
-	//	static_assert((sizeof...(args) < N), "too many arguments");
+		static_assert((sizeof...(args) <= num_components), "too many arguments");
 
 		size_t i = 0; //TODO: get rid of this and introduce template get_size
 
