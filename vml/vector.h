@@ -93,9 +93,6 @@ vector :
 		((data[Ns] = s), ...);
 	}
 
-	vector(const vector_type &) = default;
-	vector(vector_type &&) = default;
-
 	template<typename A0, typename... Args,
 		class = typename std::enable_if<
 			((sizeof... (Args) >= 1) ||
