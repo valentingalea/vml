@@ -18,37 +18,37 @@
 #include "swizzle/vector.h"
 //#include "swizzle/matrix.h"
 
-using dvec4 = swizzle::vector<double, 0, 1, 2, 3>;
-using dvec3 = swizzle::vector<double, 0, 1, 2>;
-using dvec2 = swizzle::vector<double, 0, 1>;
-using vec4 = swizzle::vector<float, 0, 1, 2, 3>;
-using vec3 = swizzle::vector<float, 0, 1, 2>;
-using vec2 = swizzle::vector<float, 0, 1>;
-using ivec4 = swizzle::vector<int, 0, 1, 2, 3>;
-using ivec3 = swizzle::vector<int, 0, 1, 2>;
-using ivec2 = swizzle::vector<int, 0, 1>;
+using dvec4 = vml::vector<double, 0, 1, 2, 3>;
+using dvec3 = vml::vector<double, 0, 1, 2>;
+using dvec2 = vml::vector<double, 0, 1>;
+using  vec4 = vml::vector< float, 0, 1, 2, 3>;
+using  vec3 = vml::vector< float, 0, 1, 2>;
+using  vec2 = vml::vector< float, 0, 1>;
+using ivec4 = vml::vector<   int, 0, 1, 2, 3>;
+using ivec3 = vml::vector<   int, 0, 1, 2>;
+using ivec2 = vml::vector<   int, 0, 1>;
 
 static_assert(sizeof(vec4) == (sizeof(float) * 4), "vec4 size mismatch");
 static_assert(sizeof(vec3) == (sizeof(float) * 3), "vec3 size mismatch");
 static_assert(sizeof(vec2) == (sizeof(float) * 2), "vec2 size mismatch");
 
-//typedef swizzle::matrix< swizzle::vector, float, 2, 2> mat2;
-//typedef swizzle::matrix< swizzle::vector, float, 3, 3> mat3;
-//typedef swizzle::matrix< swizzle::vector, float, 4, 4> mat4;
+//typedef vml::matrix< vml::vector, float, 2, 2> mat2;
+//typedef vml::matrix< vml::vector, float, 3, 3> mat3;
+//typedef vml::matrix< vml::vector, float, 4, 4> mat4;
 //typedef mat2 mat2x2;
 //typedef mat3 mat3x3;
 //typedef mat4 mat4x4;
-//typedef swizzle::matrix< swizzle::vector, float, 3, 2> mat3x2;
-//typedef swizzle::matrix< swizzle::vector, float, 4, 2> mat4x2;
-//typedef swizzle::matrix< swizzle::vector, float, 2, 3> mat2x3;
-//typedef swizzle::matrix< swizzle::vector, float, 3, 4> mat3x4;
-//typedef swizzle::matrix< swizzle::vector, double, 2, 2> dmat2;
-//typedef swizzle::matrix< swizzle::vector, double, 3, 3> dmat3;
-//typedef swizzle::matrix< swizzle::vector, double, 4, 4> dmat4;
-//typedef swizzle::matrix< swizzle::vector, double, 2, 4> dmat2x4;
+//typedef vml::matrix< vml::vector, float, 3, 2> mat3x2;
+//typedef vml::matrix< vml::vector, float, 4, 2> mat4x2;
+//typedef vml::matrix< vml::vector, float, 2, 3> mat2x3;
+//typedef vml::matrix< vml::vector, float, 3, 4> mat3x4;
+//typedef vml::matrix< vml::vector, double, 2, 2> dmat2;
+//typedef vml::matrix< vml::vector, double, 3, 3> dmat3;
+//typedef vml::matrix< vml::vector, double, 4, 4> dmat4;
+//typedef vml::matrix< vml::vector, double, 2, 4> dmat2x4;
 //// not GLSL but for easier testing
-//typedef swizzle::matrix< swizzle::vector, int, 2, 2> imat2;
-//typedef swizzle::matrix< swizzle::vector, int, 3, 3> imat3;
+//typedef vml::matrix< vml::vector, int, 2, 2> imat2;
+//typedef vml::matrix< vml::vector, int, 3, 3> imat3;
 
 TEST_CASE("vec2 basic init", "[vec2]")
 {

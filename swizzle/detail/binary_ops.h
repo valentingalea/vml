@@ -1,6 +1,6 @@
 #pragma once
 
-namespace swizzle { namespace detail
+namespace vml { namespace detail
 {
 
 template<typename vector_type, typename scalar_type>
@@ -30,4 +30,4 @@ struct binary_vec_ops
 #undef DEF_OP_BINARY
 };
 
-} } // namespace swizzle::detail
+} } // namespace vml::detail

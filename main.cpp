@@ -7,15 +7,15 @@
 #include "swizzle/vector.h"
 //#include "swizzle/matrix.h"
 
-using vec4 = swizzle::vector<float, 0, 1, 2, 3>;
-using vec3 = swizzle::vector<float, 0, 1, 2>;
-using vec2 = swizzle::vector<float, 0, 1>;
-using ivec4 = swizzle::vector<int, 0, 1, 2, 3>;
-using ivec3 = swizzle::vector<int, 0, 1, 2>;
-using ivec2 = swizzle::vector<int, 0, 1>;
+using  vec4 = vml::vector<float, 0, 1, 2, 3>;
+using  vec3 = vml::vector<float, 0, 1, 2>;
+using  vec2 = vml::vector<float, 0, 1>;
+using ivec4 = vml::vector<  int, 0, 1, 2, 3>;
+using ivec3 = vml::vector<  int, 0, 1, 2>;
+using ivec2 = vml::vector<  int, 0, 1>;
 
 //template<typename T, size_t N, size_t M>
-//using matrix = swizzle::matrix<swizzle::vector, T, N, M>;
+//using matrix = vml::matrix<vml::vector, T, N, M>;
 //using mat2 = matrix<float, 2, 2>;
 //using mat3 = matrix<float, 3, 3>;
 

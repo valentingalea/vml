@@ -1,6 +1,6 @@
 #pragma once
 
-namespace swizzle { namespace detail
+namespace vml { namespace detail
 {
 
 template<typename vector_type, typename T, size_t N, size_t... indices>
@@ -45,4 +45,4 @@ private:
 	}
 };
 
-} } // namespace swizzle::detail
+} } // namespace vml::detail

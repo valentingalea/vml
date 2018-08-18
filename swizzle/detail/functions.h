@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace swizzle { namespace detail
+namespace vml { namespace detail
 {
 
 template<typename vector_type, typename scalar_type, size_t... Ns>
@@ -44,4 +44,4 @@ struct builtin_func_lib
 	}
 };
 
-} } // namespace swizzle::detail
+} } // namespace vml::detail

@@ -2,7 +2,7 @@
 
 #include "vector.h"
 
-namespace swizzle {
+namespace vml {
 
 template<
 	template<typename, size_t> class vector_type,
@@ -73,4 +73,4 @@ private:
 	column_type data[M];
 };
 
-} // namespace swizzle
+} // namespace vml

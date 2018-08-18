@@ -1,6 +1,6 @@
 #pragma once
 
-namespace swizzle { namespace detail
+namespace vml { namespace detail
 {
 
 template<size_t Begin, size_t End>

@@ -9,7 +9,7 @@
 
 #include "vector_base.h"
 
-namespace swizzle {
+namespace vml {
 
 template<typename T, size_t... Ns>
 struct vector;
@@ -149,4 +149,4 @@ private:
 	}
 };
 
-} // namespace swizzle
+} // namespace vml

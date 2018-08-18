@@ -4,7 +4,7 @@
 // warning C4201 : nonstandard extension used : nameless struct / union
 #pragma warning(disable: 4201)
 
-namespace swizzle {
+namespace vml {
 
 template<typename T, size_t N, template<size_t...> class swizzler_wrapper>
 struct vector_base;
@@ -603,4 +603,4 @@ struct vector_base<T, 4, swizzler_wrapper>
 	};
 };
 
-}; // namespace swizzle
+}; // namespace vml
