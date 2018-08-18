@@ -27,11 +27,7 @@ DEF_OP_UNARY_VECTOR(/=)
 
 vector_type operator -() const
 {
-	vector_type v;
-	detail::static_for<0, num_components>()([&](size_t i) {
-		v[i] = -data[i];
-	});
-	return v;
+	return vector_type((-data[Ns])...);
 }
 
 //TODO: add  ==, !=
