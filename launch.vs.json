@@ -5,8 +5,8 @@
     {
       "type": "default",
       "project": "CMakeLists.txt",
-      "projectTarget": "testing.exe",
-      "name": "testing.exe",
+      "projectTarget": "test_advanced.exe",
+      "name": "test_advanced.exe",
       "args": [
         "--success",
         "--wait-for-keypress exit",

@@ -15,7 +15,7 @@
 #pragma warning(disable: 4244)
 #endif
 
-#include "swizzle/vector.h"
+#include "../vml/vector.h"
 //#include "swizzle/matrix.h"
 
 using dvec4 = vml::vector<double, 0, 1, 2, 3>;

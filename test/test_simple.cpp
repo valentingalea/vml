@@ -4,7 +4,7 @@
 #define throw(...) // stupid fix for C++17 on c4droid
 #endif
 
-#include "swizzle/vector.h"
+#include "../vml/vector.h"
 //#include "swizzle/matrix.h"
 
 using  vec4 = vml::vector<float, 0, 1, 2, 3>;
