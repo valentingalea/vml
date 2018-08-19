@@ -83,10 +83,47 @@ struct builtin_func_lib
 //
 // 8.2 Exponential Functions
 //
-	//TODO: for now <cmath> stuff should be enough for most purposes
-	// pow exp log
-	// exp2 log2
-	// sqrt inversesqrt
+	friend vector_type pow(vector_arg_type x, vector_arg_type y)
+	{
+		using namespace std;
+		return vector_type(pow(x.data[Ns], y.data[Ns])...);
+	}
+
+	friend vector_type exp(vector_arg_type t)
+	{
+		using namespace std;
+		return vector_type(exp(t.data[Ns])...);
+	}
+
+	friend vector_type log(vector_arg_type t)
+	{
+		using namespace std;
+		return vector_type(log(t.data[Ns])...);
+	}
+
+	friend vector_type exp2(vector_arg_type t)
+	{
+		using namespace std;
+		return vector_type(exp2(t.data[Ns])...);
+	}
+
+	friend vector_type log2(vector_arg_type t)
+	{
+		using namespace std;
+		return vector_type(log2(t.data[Ns])...);
+	}
+
+	friend vector_type sqrt(vector_arg_type t)
+	{
+		using namespace std;
+		return vector_type(sqrt(t.data[Ns])...);
+	}
+
+	friend vector_type inversesqrt(vector_arg_type t)
+	{
+		using namespace std;
+		return vector_type(rsqrt(t.data[Ns])...);
+	}
 
 //
 // 8.3 Common Functions
