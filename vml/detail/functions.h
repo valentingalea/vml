@@ -16,6 +16,10 @@ struct builtin_func_lib
 
 	using vector_type = vector<scalar_type, Ns...>;
 	using vector_arg_type = const vector_type &;
+	using bool_vector_type = vector<bool, Ns...>;
+
+	static constexpr auto one = scalar_type(1);
+	static constexpr auto zero = scalar_type(0);
 
 //
 // 8.1 Angle and Trigonometry Function
@@ -72,6 +76,43 @@ struct builtin_func_lib
 		return min(max(x, minVal), maxVal);
 	}
 
+	friend vector_type mix(vector_arg_type x, vector_arg_type y, vector_arg_type a)
+	{
+		return x * (vector_type(scalar_type(1)) - a) + y * a;
+	}
+
+	friend vector_type mix(vector_arg_type x, vector_arg_type y, scalar_type a)
+	{
+		return x * (scalar_type(1) - a) + y * a;
+	}
+
+	//TODO: Doesn't work
+	//friend vector_type mix(vector_arg_type x, vector_arg_type y, const bool_vector_type &a)
+	//{
+	//	return vector_type((a.data[Ns] ? y.data[Ns] : x.data[Ns])...);
+	//}
+
+	friend vector_type step(scalar_type edge, vector_arg_type x)
+	{
+		return vector_type((x.data[Ns] < edge ? scalar_type(0) : scalar_type(1))...);
+	}
+
+	friend vector_type step(vector_arg_type edge, vector_arg_type x)
+	{
+		return vector_type((x.data[Ns] < edge.data[Ns] ? scalar_type(0) : scalar_type(1))...);
+	}
+
+	friend vector_type smoothstep(scalar_type edge0, scalar_type edge1, vector_arg_type x)
+	{
+		auto t = clamp((x - edge0) / (edge1 - edge0), zero, one);
+		return t * t * (scalar_type(3) - scalar_type(2) * t);
+	}
+
+	friend vector_type smoothstep(vector_arg_type edge0, vector_arg_type edge1, vector_arg_type x)
+	{
+		auto t = clamp((x - edge0) / (edge1 - edge0), zero, one);
+		return t * t * (scalar_type(3) - scalar_type(2) * t);
+	}
 //
 // 8.5 Geometric functions
 //
@@ -127,8 +168,6 @@ struct builtin_func_lib
 
 	friend vector_type refract(vector_arg_type I, vector_arg_type N, scalar_type eta)
 	{
-		constexpr auto one = scalar_type(1);
-		constexpr auto zero = scalar_type(0);
 		auto k = one - eta * eta * (one - N.dot(N, I) * N.dot(N, I));
 		if (k < zero) {
 			return vector_type();
@@ -140,8 +179,6 @@ struct builtin_func_lib
 //
 // 8.7 Vector Relational Functions
 //
-	using bool_vector_type = vector<bool, Ns...>;
-
 	friend bool_vector_type lessThan(vector_arg_type x, vector_arg_type y)
 	{
 		return bool_vector_type((x.data[Ns] < y.data[Ns])...);

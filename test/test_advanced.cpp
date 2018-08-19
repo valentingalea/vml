@@ -250,6 +250,16 @@ TEST_CASE("builtin functions")
 		REQUIRE(c.x == 2);
 		REQUIRE(c.y == 3);
 		REQUIRE(c.z == 3);
+
+		REQUIRE(step(2, a).x == 0);
+
+		auto s = mix(vec3(0.f), vec3(1.f), .5f);
+		REQUIRE(s.x == Approx(.5f));
+
+		s = smoothstep(0.f, 1.f, vec3(.5f));
+		REQUIRE(s.x == Approx(.5f));
+		s = smoothstep(vec3(0.f), vec3(1.f), vec3(.5f));
+		REQUIRE(s.x == Approx(.5f));
 	}
 
 	SECTION("geometry")
