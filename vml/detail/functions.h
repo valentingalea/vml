@@ -77,8 +77,8 @@ struct builtin_func_lib
 		using namespace std;
 		return vector_type(atan(t.data[Ns])...);
 	}
-	// sinh cosh tanh
-	// asinh acosh atanh
+
+	// TODO: sinh cosh tanh asinh acosh atanh
 
 //
 // 8.2 Exponential Functions
@@ -119,18 +119,65 @@ struct builtin_func_lib
 		return vector_type(sqrt(t.data[Ns])...);
 	}
 
+	scalar_type rsqrt(scalar_type t)
+	{
+		return one / std::sqrt(t); //TODO: optimize https://sites.google.com/site/burlachenkok/various_way_to_implement-rsqrtx-in-c
+	}
+
 	friend vector_type inversesqrt(vector_arg_type t)
 	{
-		using namespace std;
 		return vector_type(rsqrt(t.data[Ns])...);
 	}
 
 //
 // 8.3 Common Functions
 //
-	//TODO:
-	// abs sign
-	// floor trunc round roundEven ceil fract mod modf
+	friend vector_type abs(vector_arg_type t)
+	{
+		return vector_type(std::abs(t.data[Ns])...);
+	}
+
+	scalar_type sign(scalar_type t)
+	{
+		return (zero < x) - (x < zero);
+	}
+
+	friend vector_type sign(vector_arg_type t)
+	{
+		return vector_type(sign(t.data[Ns])...);
+	}
+
+	friend vector_type floor(vector_arg_type t)
+	{
+		return vector_type(std::floor(t.data[Ns])...);
+	}
+
+	friend vector_type trunc(vector_arg_type t)
+	{
+		return vector_type(std::trunc(t.data[Ns])...);
+	}
+
+	//TODO: round roundEven
+
+	friend vector_type ceil(vector_arg_type t)
+	{
+		return vector_type(std::ceil(t.data[Ns])...);
+	}
+
+	friend vector_type fract(vector_arg_type t)
+	{
+		return vector_type((t.data[Ns] - std::floor(t.data[Ns]))...);
+	}
+
+	friend vector_type mod(vector_arg_type x, scalar_type y)
+	{
+		return vector_type((x.data[Ns] - y * std::floor(x.data[Ns] / y))...);
+	}
+
+	friend vector_type mod(vector_arg_type x, vector_arg_type y)
+	{
+		return vector_type((x.data[Ns] - y.data[Ns] * std::floor(x.data[Ns] / y.data[Ns]))...);
+	}
 	
 	friend vector_type min(vector_arg_type left, vector_arg_type right)
 	{
