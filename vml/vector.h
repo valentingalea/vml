@@ -1,7 +1,5 @@
 #pragma once
 
-#include <algorithm>
-
 #include "detail/util.h"
 #include "detail/swizzler.h"
 #include "detail/functions.h"
@@ -139,7 +137,8 @@ private:
 	template<typename Other, size_t... Other_Ns>
 	void construct_at_index(size_t &i, const vector<Other, Other_Ns...> &arg)
 	{
-		constexpr auto count = std::min(num_components, vector<Other, Other_Ns...>::num_components);
+		constexpr auto count = num_components <= vector<Other, Other_Ns...>::num_components ?
+			num_components : vector<Other, Other_Ns...>::num_components;
 		detail::static_for<0, count>()([&](size_t j) {
 			data[i++] = arg.data[j];
 		});
