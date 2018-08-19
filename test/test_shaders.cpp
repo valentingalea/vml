@@ -4,6 +4,8 @@ using  vec4 = vml::vector<float, 0, 1, 2, 3>;
 using  vec3 = vml::vector<float, 0, 1, 2>;
 using  vec2 = vml::vector<float, 0, 1>;
 
+namespace sandbox { // to isolate against std:: funcs potentially found by ADL (ex: min/max)
+
 namespace ref
 {
 	typedef vec2& vec2;
@@ -52,6 +54,8 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 #undef out
 #undef inout
 #undef uniform
+
+} // namespace sandbox
 
 int main()
 {
