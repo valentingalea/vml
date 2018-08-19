@@ -38,44 +38,37 @@ struct builtin_func_lib
 
 	friend vector_type sin(vector_arg_type t)
 	{
-		using namespace std;
-		return vector_type(sin(t.data[Ns])...);
+		return vector_type(std::sin(t.data[Ns])...);
 	}
 
 	friend vector_type cos(vector_arg_type t)
 	{
-		using namespace std;
-		return vector_type(cos(t.data[Ns])...);
+		return vector_type(std::cos(t.data[Ns])...);
 	}
 
 	friend vector_type tan(vector_arg_type t)
 	{
-		using namespace std;
-		return vector_type(tan(t.data[Ns])...);
+		return vector_type(std::tan(t.data[Ns])...);
 	}
 
 	friend vector_type asin(vector_arg_type t)
 	{
-		using namespace std;
-		return vector_type(asin(t.data[Ns])...);
+		return vector_type(std::asin(t.data[Ns])...);
 	}
 
 	friend vector_type acos(vector_arg_type t)
 	{
-		using namespace std;
-		return vector_type(acos(t.data[Ns])...);
+		return vector_type(std::acos(t.data[Ns])...);
 	}
 
 	friend vector_type atan(vector_arg_type y, vector_arg_type x)
 	{
-		using namespace std;
-		return vector_type(atan2(y.data[Ns] / x.data[Ns])...);
+		return vector_type(std::atan2(y.data[Ns] / x.data[Ns])...);
 	}
 
 	friend vector_type atan(vector_arg_type t)
 	{
-		using namespace std;
-		return vector_type(atan(t.data[Ns])...);
+		return vector_type(std::atan(t.data[Ns])...);
 	}
 
 	// TODO: sinh cosh tanh asinh acosh atanh
@@ -85,38 +78,32 @@ struct builtin_func_lib
 //
 	friend vector_type pow(vector_arg_type x, vector_arg_type y)
 	{
-		using namespace std;
-		return vector_type(pow(x.data[Ns], y.data[Ns])...);
+		return vector_type(std::pow(x.data[Ns], y.data[Ns])...);
 	}
 
 	friend vector_type exp(vector_arg_type t)
 	{
-		using namespace std;
-		return vector_type(exp(t.data[Ns])...);
+		return vector_type(std::exp(t.data[Ns])...);
 	}
 
 	friend vector_type log(vector_arg_type t)
 	{
-		using namespace std;
-		return vector_type(log(t.data[Ns])...);
+		return vector_type(std::log(t.data[Ns])...);
 	}
 
 	friend vector_type exp2(vector_arg_type t)
 	{
-		using namespace std;
-		return vector_type(exp2(t.data[Ns])...);
+		return vector_type(std::exp2(t.data[Ns])...);
 	}
 
 	friend vector_type log2(vector_arg_type t)
 	{
-		using namespace std;
-		return vector_type(log2(t.data[Ns])...);
+		return vector_type(std::log2(t.data[Ns])...);
 	}
 
 	friend vector_type sqrt(vector_arg_type t)
 	{
-		using namespace std;
-		return vector_type(sqrt(t.data[Ns])...);
+		return vector_type(std::sqrt(t.data[Ns])...);
 	}
 
 	scalar_type rsqrt(scalar_type t)
