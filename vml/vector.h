@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #include "detail/util.h"
 #include "detail/swizzler.h"
 #include "detail/functions.h"
@@ -86,7 +88,7 @@ vector :
 		((data[Ns] = 0), ...);
 	}
 
-	explicit vector(scalar_type s)
+	/*explicit*/ vector(scalar_type s)
 	{
 		((data[Ns] = s), ...);
 	}
