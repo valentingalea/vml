@@ -24,10 +24,59 @@ struct builtin_func_lib
 //
 // 8.1 Angle and Trigonometry Function
 //
-	//TODO: for now <cmath> stuff should be enough for most purposes
-	// radians degrees
-	// sin cos tan
-	// asin acos atan(y, x) atan(y/x)
+	friend vector_type radians(vector_arg_type degrees)
+	{
+		constexpr auto pi_over_180 = scalar_type(3.14159265358979323846 / 180);
+		return vector_type((degrees.data[Ns] * pi_over_180)...);
+	}
+
+	friend vector_type degrees(vector_arg_type radians)
+	{
+		constexpr auto _180_over_pi = scalar_type(180 / 3.14159265358979323846);
+		return vector_type((radians.data[Ns] * _180_over_pi)...);
+	}
+
+	friend vector_type sin(vector_arg_type t)
+	{
+		using namespace std;
+		return vector_type(sin(t.data[Ns])...);
+	}
+
+	friend vector_type cos(vector_arg_type t)
+	{
+		using namespace std;
+		return vector_type(cos(t.data[Ns])...);
+	}
+
+	friend vector_type tan(vector_arg_type t)
+	{
+		using namespace std;
+		return vector_type(tan(t.data[Ns])...);
+	}
+
+	friend vector_type asin(vector_arg_type t)
+	{
+		using namespace std;
+		return vector_type(asin(t.data[Ns])...);
+	}
+
+	friend vector_type acos(vector_arg_type t)
+	{
+		using namespace std;
+		return vector_type(acos(t.data[Ns])...);
+	}
+
+	friend vector_type atan(vector_arg_type y, vector_arg_type x)
+	{
+		using namespace std;
+		return vector_type(atan2(y.data[Ns] / x.data[Ns])...);
+	}
+
+	friend vector_type atan(vector_arg_type t)
+	{
+		using namespace std;
+		return vector_type(atan(t.data[Ns])...);
+	}
 	// sinh cosh tanh
 	// asinh acosh atanh
 
