@@ -11,6 +11,7 @@ public:
 	SDL2_app();
 	~SDL2_app();
 	void run();
+	void draw();
 
 private:
 	bool IsAlive = false;
