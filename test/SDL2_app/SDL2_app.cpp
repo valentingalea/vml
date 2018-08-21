@@ -1,3 +1,5 @@
+#include "../c4droid.h"
+
 #include "SDL2_app.h"
 #include <cassert>
 

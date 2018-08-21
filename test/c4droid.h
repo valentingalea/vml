@@ -1,0 +1,6 @@
+#ifdef C4DROID
+// stupid fixes for C++17 on C4droid
+#define _SILENCE_CXX17_UNCAUGHT_EXCEPTION_DEPRECATION_WARNING
+#define CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS
+#define throw(...)
+#endif

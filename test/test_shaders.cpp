@@ -1,3 +1,5 @@
+#include "c4droid.h"
+
 #include "../vml/vector.h"
 
 using  vec4 = vml::vector<float, 0, 1, 2, 3>;

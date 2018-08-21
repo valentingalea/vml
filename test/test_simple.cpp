@@ -1,8 +1,6 @@
 #include <cstdio>
 
-#ifdef C4DROID
-#define throw(...) // stupid fix for C++17 on c4droid
-#endif
+#include "c4droid.h"
 
 #include "../vml/vector.h"
 //#include "swizzle/matrix.h"

@@ -1,9 +1,4 @@
-#ifdef C4DROID
-// stupid fixes for C++17 on C4droid
-#define _SILENCE_CXX17_UNCAUGHT_EXCEPTION_DEPRECATION_WARNING
-#define CATCH_CONFIG_NO_CPP17_UNCAUGHT_EXCEPTIONS
-#define throw(...)
-#endif
+#include "c4droid.h"
 
 #define CATCH_CONFIG_MAIN // https://github.com/catchorg/Catch2/blob/master/docs/configuration.md#main-implementation
 #define CATCH_CONFIG_FAST_COMPILE // https://github.com/catchorg/Catch2/blob/master/docs/configuration.md#catch_config_fast_compile
