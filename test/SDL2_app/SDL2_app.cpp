@@ -45,6 +45,19 @@ SDL2_app::SDL2_app()
 		log();
 		return;
 	}
+
+	Texture.reset(
+		SDL_CreateTexture(
+			Renderer.get(),
+			SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING,
+			SCR_W8, SCR_H8
+		),
+		SDL_DestroyTexture
+	);
+	if (!Texture.get()) {
+		log();
+		return;
+	}
 }
 
 SDL2_app::~SDL2_app()
@@ -102,26 +115,26 @@ void SDL2_app::draw()
 {
 	sandbox::fragment_shader shader;
 
+	void *tex_ptr = nullptr;
+	int tex_pitch = 0;
+	SDL_LockTexture(Texture.get(), nullptr, &tex_ptr, &tex_pitch);
+
 	for (int y = 0; y < SCR_H8; ++y) {
+		uint8_t * ptr = reinterpret_cast<uint8_t*>(tex_ptr) + y * tex_pitch;
 		for (int x = 0; x < SCR_W8; ++x) {
 			shader.gl_FragCoord = vec2(static_cast<float>(x), SCR_H8 - 1.0f - y);
 			shader.mainImage(shader.gl_FragColor, shader.gl_FragCoord);
 			const auto color = shader.gl_FragColor;
 
-			SDL_SetRenderDrawColor(
-				Renderer.get()
-				, static_cast<uint8_t>(255 * color.r + 0.5f)
-				, static_cast<uint8_t>(255 * color.g + 0.5f)
-				, static_cast<uint8_t>(255 * color.b + 0.5f)
-				, 0
-			);
-			SDL_RenderDrawPoint(
-				Renderer.get()
-				, x, y
-			);
+			*ptr++ = static_cast<uint8_t>(255 * color.r + 0.5f);
+			*ptr++ = static_cast<uint8_t>(255 * color.g + 0.5f);
+			*ptr++ = static_cast<uint8_t>(255 * color.b + 0.5f);
+			ptr++;
 		}
 	}
 
+	SDL_UnlockTexture(Texture.get());
+	SDL_RenderCopy(Renderer.get(), Texture.get(), NULL, NULL);
 	SDL_RenderPresent(Renderer.get());
 }
 

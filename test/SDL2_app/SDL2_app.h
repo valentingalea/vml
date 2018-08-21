@@ -17,6 +17,7 @@ private:
 	bool IsAlive = false;
 	std::shared_ptr<SDL_Window> Window;
 	std::shared_ptr<SDL_Renderer> Renderer;
+	std::shared_ptr<SDL_Texture> Texture;
 	
 	void log();
 };
