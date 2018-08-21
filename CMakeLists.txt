@@ -14,6 +14,12 @@ add_executable(test_advanced test/catch.hpp test/test_advanced.cpp)
 
 add_executable(test_shaders test/test_shaders.cpp)
 
+SET(ENV{SDLDIR} "${PROJECT_SOURCE_DIR}/test/SDL_app/SDL-1.2.15/")
+find_package(SDL REQUIRED)
+include_directories(${SDL_INCLUDE_DIR})
+add_executable(SDL_app test/SDL_app/SDL_app.h test/SDL_app/SDL_app.cpp)
+target_link_libraries(SDL_app ${SDL_LIBRARY})
+
 # https://github.com/tcbrindle/sdl2-cmake-scripts
 # https://www.reddit.com/r/gamedev/comments/4t07f0/how_do_you_use_findsdlcmake/
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/useful_variables/Logging-Useful-Variables
