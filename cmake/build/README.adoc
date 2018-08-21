@@ -1,0 +1,21 @@
+= CMAKE
+
+== Guides
+
+http://preshing.com/20170511/how-to-build-a-cmake-based-project/
+http://preshing.com/20170522/learn-cmakes-scripting-language-in-15-minutes/
+
+== Tips
+
+=== Generate the cache in a different folder
+Default it's in ./CMakefiles
+
+.just execute cmake from the desired location
+-----
+cd your_project
+mkdir build
+cd build
+cmake ../
+----
+
+https://stackoverflow.com/questions/44888100/how-to-change-cmake-cache-and-build-files-directory[source]
