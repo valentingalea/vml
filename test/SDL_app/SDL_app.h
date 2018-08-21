@@ -11,10 +11,12 @@ public:
 	SDL_app();
 	~SDL_app();
 	void run();
+	void draw();
 
 private:
 	bool IsAlive = false;
-	SDL_Surface* Screen;
+	SDL_Surface *Screen = nullptr;
+	std::shared_ptr<SDL_Surface> OffScreen;
 	
 	void log();
 };
