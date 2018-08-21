@@ -4,6 +4,8 @@ project (VML)
 
 if (MSVC)
 	add_compile_options(/W4 /permissive- /std:c++17)
+else()
+	add_compile_options(-Wall -std=c++17)
 endif()
 
 add_executable(test_simple test/test_simple.cpp)
