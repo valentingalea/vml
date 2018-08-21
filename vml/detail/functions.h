@@ -124,7 +124,7 @@ struct builtin_func_lib
 		return vector_type(std::abs(t.data[Ns])...);
 	}
 
-	scalar_type sign(scalar_type t)
+	scalar_type sign(scalar_type x)
 	{
 		return (zero < x) - (x < zero);
 	}
