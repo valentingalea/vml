@@ -4,6 +4,7 @@
 #undef main
 
 #include <memory>
+#include <vector>
 
 class SDL_app
 {
@@ -13,10 +14,17 @@ public:
 	void run();
 	void draw();
 
+	struct WorkDef
+	{
+		int height_start;
+		int height_end;
+	};
 private:
 	bool IsAlive = false;
+	
 	SDL_Surface *Screen = nullptr;
 	std::shared_ptr<SDL_Surface> OffScreen;
+	std::vector<WorkDef> WorkItems;
 	
 	void log();
 };

@@ -14,6 +14,9 @@ float sandbox::iTimeDelta	= 0; // render time (in seconds)
 #include <cstdio>
 #include <chrono>
 
+#define _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
+#include "ThreadPool\include\threadpool\parallel_for_each.h"
+
 SDL_app::SDL_app()
 {
 	IsAlive = SDL_Init(SDL_INIT_VIDEO) == 0;
@@ -65,9 +68,15 @@ void SDL_app::run()
 		return;
 	}
 
-	SDL_Event event;
-	bool running = true;
+	auto event = SDL_Event();
+	auto running = true;
 	auto time_start = std::chrono::system_clock::now();
+
+	const int count = std::thread::hardware_concurrency();
+	const int slice = SCR_H8 / count;
+	for (int i = 0; i < count; i++) {
+		WorkItems.emplace_back(WorkDef{ i * slice, i * slice + slice  });
+	}
 
 	while (running) {
 		auto time_frame = std::chrono::system_clock::now();
@@ -96,26 +105,42 @@ void SDL_app::run()
 	}
 }
 
-void SDL_app::draw()
+struct Worker
 {
-	auto bmp = OffScreen.get();
-
 	sandbox::fragment_shader shader;
+	const SDL_app::WorkDef work;
+	const SDL_Surface * const bmp;
 
-	int heightStart = 0;
-	int heightEnd = bmp->h;
-	for (int y = heightStart; y < heightEnd; ++y) {
-		uint8_t * ptr = reinterpret_cast<uint8_t*>(bmp->pixels) + y * bmp->pitch;
-		for (int x = 0; x < bmp->w; ++x) {
-			shader.gl_FragCoord = vec2(static_cast<float>(x), bmp->h - 1.0f - y);
-			shader.mainImage(shader.gl_FragColor, shader.gl_FragCoord);
-			const auto color = shader.gl_FragColor;
+	Worker(const SDL_app::WorkDef &work_, const SDL_Surface *bmp_) :
+		work(work_), bmp(bmp_)
+	{}
 
-			*ptr++ = static_cast<uint8_t>(255 * color.r + 0.5f);
-			*ptr++ = static_cast<uint8_t>(255 * color.g + 0.5f);
-			*ptr++ = static_cast<uint8_t>(255 * color.b + 0.5f);
+	void operator()()
+	{
+		for (int y = work.height_start; y < work.height_end; ++y) {
+			uint8_t * ptr = reinterpret_cast<uint8_t*>(bmp->pixels) + y * bmp->pitch;
+			for (int x = 0; x < bmp->w; ++x) {
+				shader.gl_FragCoord = vec2(static_cast<float>(x), bmp->h - 1.0f - y);
+				shader.mainImage(shader.gl_FragColor, shader.gl_FragCoord);
+				const auto color = shader.gl_FragColor;
+
+				*ptr++ = static_cast<uint8_t>(255 * color.r + 0.5f);
+				*ptr++ = static_cast<uint8_t>(255 * color.g + 0.5f);
+				*ptr++ = static_cast<uint8_t>(255 * color.b + 0.5f);
+			}
 		}
 	}
+};
+
+void SDL_app::draw()
+{
+	const auto bmp = OffScreen.get();
+
+	threadpool::parallel::for_each(
+		WorkItems.begin(), WorkItems.end(),
+		[bmp](auto &item) {
+			Worker(item, bmp)();
+	});
 
 	SDL_BlitSurface(bmp, NULL, Screen, NULL);
 }
