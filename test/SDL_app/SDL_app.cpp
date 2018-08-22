@@ -15,7 +15,7 @@ float sandbox::iTimeDelta	= 0; // render time (in seconds)
 #include <chrono>
 
 #define _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
-#include "ThreadPool\include\threadpool\parallel_for_each.h"
+#include "ThreadPool/include/threadpool/parallel_for_each.h"
 
 SDL_app::SDL_app()
 {
