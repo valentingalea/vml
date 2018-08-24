@@ -27,24 +27,27 @@ static_assert(sizeof(vec4) == (sizeof(float) * 4), "vec4 size mismatch");
 static_assert(sizeof(vec3) == (sizeof(float) * 3), "vec3 size mismatch");
 static_assert(sizeof(vec2) == (sizeof(float) * 2), "vec2 size mismatch");
 
-using mat2 = vml::matrix<float, vml::vector, 2, 2>;
-using mat3 = vml::matrix<float, vml::vector, 3, 3>;
-using mat4 = vml::matrix<float, vml::vector, 4, 4>;
+using   _01 = vml::indices_pack<0, 1>;
+using  _012 = vml::indices_pack<0, 1, 2>;
+using _0123 = vml::indices_pack<0, 1, 2, 3>;
+using mat2 = vml::matrix<float, vml::vector, _01, _01>;
+using mat3 = vml::matrix<float, vml::vector, _012, _012>;
+using mat4 = vml::matrix<float, vml::vector, _0123, _0123>;
 using mat2x2 = mat2;
 using mat3x3 = mat3;
 using mat4x4 = mat4;
-using mat3x2 = vml::matrix<float, vml::vector, 3, 2>;
-using mat4x2 = vml::matrix<float, vml::vector, 4, 2>;
-using mat2x3 = vml::matrix<float, vml::vector, 2, 3>;
-using mat3x4 = vml::matrix<float, vml::vector, 3, 4>;
-using dmat2 = vml::matrix<double, vml::vector, 2, 2>;
-using dmat3 = vml::matrix<double, vml::vector, 3, 3>;
-using dmat4 = vml::matrix<double, vml::vector, 4, 4>;
-using dmat2x4 = vml::matrix<double, vml::vector, 2, 4>;
+using mat3x2 = vml::matrix<float, vml::vector, _012, _01>;
+using mat4x2 = vml::matrix<float, vml::vector, _0123, _01>;
+using mat2x3 = vml::matrix<float, vml::vector, _01, _012>;
+using mat3x4 = vml::matrix<float, vml::vector, _012, _0123>;
+using dmat2 = vml::matrix<double, vml::vector, _01, _01>;
+using dmat3 = vml::matrix<double, vml::vector, _012, _012>;
+using dmat4 = vml::matrix<double, vml::vector, _0123, _0123>;
+using dmat2x4 = vml::matrix<double, vml::vector, _01, _0123>;
 
-// not GLSL but for easier testing
-using imat2 = vml::matrix<int, vml::vector, 2, 2>;
-using imat3 = vml::matrix<int, vml::vector, 3, 3>;
+// not GLSL but easier to test
+using imat2 = vml::matrix<int, vml::vector, _01, _01>;
+using imat3 = vml::matrix<int, vml::vector, _012, _012>;
 
 TEST_CASE("vec2 basic init", "[vec2]")
 {
@@ -198,6 +201,50 @@ TEST_CASE("matrix ctor")
 		REQUIRE(m[0].y == 2);
 		REQUIRE(m[1].x == 3);
 		REQUIRE(m[1].y == 4);
+	}
+}
+
+TEST_CASE("matrix ops")
+{
+	auto m = imat2(1, 2, 3, 4);
+
+	SECTION("cols")
+	{
+		auto c = m.column(0);
+		REQUIRE(c.x == 1);
+		REQUIRE(c.y == 2);
+		c = m.column(1);
+		REQUIRE(c.x == 3);
+		REQUIRE(c.y == 4);
+	}
+
+	SECTION("rows")
+	{
+		auto r = m.row(0);
+		REQUIRE(r.x == 1);
+		REQUIRE(r.y == 3);
+		r = m.row(1);
+		REQUIRE(r.x == 2);
+		REQUIRE(r.y == 4);
+	}
+
+	SECTION("mul")
+	{
+		auto v = m * ivec2(1);
+		REQUIRE(v.x == 4);
+		REQUIRE(v.y == 6);
+		v = ivec2(1) * m;
+		REQUIRE(v.x == 3);
+		REQUIRE(v.y == 7);
+	}
+
+	SECTION("identity")
+	{
+		auto i = m * imat2(1, 0, 0, 1);
+		REQUIRE(i[0][0] == 1);
+		REQUIRE(i[0][1] == 2);
+		REQUIRE(i[1][0] == 3);
+		REQUIRE(i[1][1] == 4);
 	}
 }
 

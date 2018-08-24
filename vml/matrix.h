@@ -4,25 +4,37 @@
 
 namespace vml {
 
+template<size_t...>
+struct indices_pack;
+
+template<
+	typename,
+	template<typename, size_t...> class vector_type,
+	typename...
+>
+struct matrix;
+
 template<
 	typename scalar_type,
 	template<typename, size_t...> class vector_type,
-	size_t N, size_t M
+	size_t... Columns,
+	size_t... Rows
 >
-struct matrix
-	//TODO: binary operators
+struct matrix<scalar_type, vector_type, indices_pack<Columns...>, indices_pack<Rows...>>
+	: public detail::binary_vec_ops<matrix<scalar_type, vector_type, indices_pack<Columns...>, indices_pack<Rows...>>, scalar_type>
 {
-	using column_type = typename detail::vec_equiv<scalar_type, N>::type;
-	using row_type = typename detail::vec_equiv<scalar_type, M>::type;
+	static constexpr auto N = sizeof...(Columns);
+	static constexpr auto M = sizeof...(Rows);
+	using column_type = vector_type<scalar_type, Columns...>; //typename detail::vec_equiv<scalar_type, N>::type;
+	using row_type = vector_type<scalar_type, Rows...>; //typename detail::vec_equiv<scalar_type, M>::type;
 
 	matrix() = default; // zeroes all data
 
-	explicit matrix(scalar_type s) // fill in diagonally
+	template<typename S, typename = std::enable_if<
+		std::is_same<S, scalar_type>::value && (N == M)>::type>
+	explicit matrix(S s) // fill in diagonally
 	{
-		constexpr auto num = N < M ? N : M;
-		detail::static_for<0, num>()([&](size_t i) {
-			data[i][i] = s;
-		});
+		((data[Rows][Rows] = s), ...);
 	}
 
 	template<typename... Args,
@@ -49,7 +61,60 @@ struct matrix
 		return data[i];
 	}
 
-	//TODO: unary operators
+	using self_type = matrix;
+#include "detail/unary_ops.h"
+
+	friend column_type operator *(const matrix &m, const row_type &v)
+	{
+		return mul(m, v);
+	}
+
+	friend row_type operator *(const column_type &v, const matrix &m)
+	{
+		return mul(v, m);
+	}
+
+	matrix& operator *=(const matrix &m)
+	{
+		return *this = mul(*this, m);
+	}
+
+	static column_type mul(const matrix &m, const row_type &v)
+	{
+		column_type out;
+		((out[Rows] = dot(v, m.row(Rows))), ...);
+		return out;
+	}
+
+	static row_type mul(const column_type &v, const matrix &m)
+	{
+		row_type out;
+		((out[Columns] = dot(v, m.column(Columns))), ...);
+		return out;
+	}
+
+	template<size_t... OtherRows>
+	static auto mul(
+		const matrix &m1,
+		const matrix<scalar_type, vector_type, indices_pack<Columns...>, indices_pack<OtherRows...>> &m2)
+	{
+		matrix<scalar_type, vector_type, indices_pack<Columns...>, indices_pack<OtherRows...>> out;
+		((out[Columns] = m1 * m2.column(Columns)), ...);
+		return out;
+	}
+
+	const column_type& column(size_t i) const
+	{
+		return data[i];
+	}
+
+	row_type row(size_t i) const
+	{
+		row_type out;
+		((out[Rows] = data[Rows][i]), ...);
+
+		return out;
+	}
 
 private:
 // these constructors advance down along columns

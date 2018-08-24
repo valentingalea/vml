@@ -73,6 +73,8 @@ vector :
 		return static_cast<const decay_type&>(*this);
 	}
 
+	using self_type = vector_type;
+#define HAS_UNARY_MUL
 #include "detail/unary_ops.h"
 
 	//TODO: add matrix multiply
