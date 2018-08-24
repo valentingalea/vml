@@ -1,9 +1,10 @@
 // must define `self_type`
+// must define `Is` as the param pack expansion of the indices
 
 #define DEF_OP_UNARY_SCALAR(op)				\
 	self_type& operator op(scalar_type s) \
 	{										\
-		((data[Ns] op s), ...);				\
+		((data[Is] op s), ...);				\
 		return *this;						\
 	}
 
@@ -15,7 +16,7 @@ DEF_OP_UNARY_SCALAR(/=)
 #define DEF_OP_UNARY_VECTOR(op)				\
 	self_type& operator op(const self_type &v) \
 	{										\
-		((data[Ns] op v.data[Ns]), ...);	\
+		((data[Is] op v.data[Is]), ...);	\
 		return *this;						\
 	}
 
@@ -27,12 +28,13 @@ DEF_OP_UNARY_VECTOR(*=)
 #endif
 DEF_OP_UNARY_VECTOR(/=)
 
-#undef DEF_OP_UNARY_SCALAR
-#undef DEF_OP_UNARY_VECTOR
-
 self_type operator -() const
 {
-	return self_type((-data[Ns])...);
+	return self_type((-data[Is])...);
 }
 
 //TODO: add  ==, !=
+
+#undef DEF_OP_UNARY_SCALAR
+#undef DEF_OP_UNARY_VECTOR
+#undef Is

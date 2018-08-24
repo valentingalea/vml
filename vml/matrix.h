@@ -30,7 +30,7 @@ struct matrix<scalar_type, vector_type, indices_pack<Columns...>, indices_pack<R
 
 	matrix() = default; // zeroes all data
 
-	template<typename S, typename = std::enable_if<
+	template<typename S, class = typename std::enable_if<
 		std::is_same<S, scalar_type>::value && (N == M)>::type>
 	explicit matrix(S s) // fill in diagonally
 	{
@@ -62,6 +62,7 @@ struct matrix<scalar_type, vector_type, indices_pack<Columns...>, indices_pack<R
 	}
 
 	using self_type = matrix;
+#define Is Rows
 #include "detail/unary_ops.h"
 
 	friend column_type operator *(const matrix &m, const row_type &v)

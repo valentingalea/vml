@@ -22,6 +22,7 @@ int main ()
 {
 	auto v = vec3(42.f);
 
+	v *= 1.f;
 	v *= v.bbb;
 
 	dot(v.xx, v.zz);
@@ -29,6 +30,7 @@ int main ()
 	auto mm = mat2(1, 2, 3, 4);
 	auto mmm = mat3(0, vec2(1, 2), vec2(3, 4), 5, v.xyx);
 	mmm * mmm;
+	mm *= 1.f;
 
 	return 0;
 }
