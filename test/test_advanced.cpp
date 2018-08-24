@@ -11,7 +11,7 @@
 #endif
 
 #include "../vml/vector.h"
-//#include "swizzle/matrix.h"
+#include "../vml/matrix.h"
 
 using dvec4 = vml::vector<double, 0, 1, 2, 3>;
 using dvec3 = vml::vector<double, 0, 1, 2>;
@@ -27,23 +27,24 @@ static_assert(sizeof(vec4) == (sizeof(float) * 4), "vec4 size mismatch");
 static_assert(sizeof(vec3) == (sizeof(float) * 3), "vec3 size mismatch");
 static_assert(sizeof(vec2) == (sizeof(float) * 2), "vec2 size mismatch");
 
-//typedef vml::matrix< vml::vector, float, 2, 2> mat2;
-//typedef vml::matrix< vml::vector, float, 3, 3> mat3;
-//typedef vml::matrix< vml::vector, float, 4, 4> mat4;
-//typedef mat2 mat2x2;
-//typedef mat3 mat3x3;
-//typedef mat4 mat4x4;
-//typedef vml::matrix< vml::vector, float, 3, 2> mat3x2;
-//typedef vml::matrix< vml::vector, float, 4, 2> mat4x2;
-//typedef vml::matrix< vml::vector, float, 2, 3> mat2x3;
-//typedef vml::matrix< vml::vector, float, 3, 4> mat3x4;
-//typedef vml::matrix< vml::vector, double, 2, 2> dmat2;
-//typedef vml::matrix< vml::vector, double, 3, 3> dmat3;
-//typedef vml::matrix< vml::vector, double, 4, 4> dmat4;
-//typedef vml::matrix< vml::vector, double, 2, 4> dmat2x4;
-//// not GLSL but for easier testing
-//typedef vml::matrix< vml::vector, int, 2, 2> imat2;
-//typedef vml::matrix< vml::vector, int, 3, 3> imat3;
+using mat2 = vml::matrix<float, vml::vector, 2, 2>;
+using mat3 = vml::matrix<float, vml::vector, 3, 3>;
+using mat4 = vml::matrix<float, vml::vector, 4, 4>;
+using mat2x2 = mat2;
+using mat3x3 = mat3;
+using mat4x4 = mat4;
+using mat3x2 = vml::matrix<float, vml::vector, 3, 2>;
+using mat4x2 = vml::matrix<float, vml::vector, 4, 2>;
+using mat2x3 = vml::matrix<float, vml::vector, 2, 3>;
+using mat3x4 = vml::matrix<float, vml::vector, 3, 4>;
+using dmat2 = vml::matrix<double, vml::vector, 2, 2>;
+using dmat3 = vml::matrix<double, vml::vector, 3, 3>;
+using dmat4 = vml::matrix<double, vml::vector, 4, 4>;
+using dmat2x4 = vml::matrix<double, vml::vector, 2, 4>;
+
+// not GLSL but for easier testing
+using imat2 = vml::matrix<int, vml::vector, 2, 2>;
+using imat3 = vml::matrix<int, vml::vector, 3, 3>;
 
 TEST_CASE("vec2 basic init", "[vec2]")
 {
@@ -164,41 +165,41 @@ TEST_CASE("lvalues", "[vec2][vec3]")
 	}
 }
 
-//TEST_CASE("matrix ctor")
-//{
-//	SECTION("identity") {
-//		auto m = imat2(1);
-//		REQUIRE(m[0].x == 1);
-//		REQUIRE(m[0].y == 0);
-//		REQUIRE(m[1].x == 0);
-//		REQUIRE(m[1].y == 1);
-//	}
-//
-//	SECTION("from scalars") {
-//		auto m = imat2(1, 2, 3, 4);
-//		REQUIRE(m[0].x == 1);
-//		REQUIRE(m[0].y == 2);
-//		REQUIRE(m[1].x == 3);
-//		REQUIRE(m[1].y == 4);
-//	}
-//
-//	SECTION("from 2 vec") {
-//		auto m = imat2(ivec2(1, 2), ivec2(3, 4));
-//		REQUIRE(m[0].x == 1);
-//		REQUIRE(m[0].y == 2);
-//		REQUIRE(m[1].x == 3);
-//		REQUIRE(m[1].y == 4);
-//	}
-//
-//	SECTION("from mix") {
-//		auto v = ivec3(2, 3, 4);
-//		auto m = imat2(1, v.xyz);
-//		REQUIRE(m[0].x == 1);
-//		REQUIRE(m[0].y == 2);
-//		REQUIRE(m[1].x == 3);
-//		REQUIRE(m[1].y == 4);
-//	}
-//}
+TEST_CASE("matrix ctor")
+{
+	SECTION("identity") {
+		auto m = imat2(1);
+		REQUIRE(m[0].x == 1);
+		REQUIRE(m[0].y == 0);
+		REQUIRE(m[1].x == 0);
+		REQUIRE(m[1].y == 1);
+	}
+
+	SECTION("from scalars") {
+		auto m = imat2(1, 2, 3, 4);
+		REQUIRE(m[0].x == 1);
+		REQUIRE(m[0].y == 2);
+		REQUIRE(m[1].x == 3);
+		REQUIRE(m[1].y == 4);
+	}
+
+	SECTION("from 2 vec") {
+		auto m = imat2(ivec2(1, 2), ivec2(3, 4));
+		REQUIRE(m[0].x == 1);
+		REQUIRE(m[0].y == 2);
+		REQUIRE(m[1].x == 3);
+		REQUIRE(m[1].y == 4);
+	}
+
+	SECTION("from mix") {
+		auto v = ivec3(2, 3, 4);
+		auto m = imat2(1, v.xyz);
+		REQUIRE(m[0].x == 1);
+		REQUIRE(m[0].y == 2);
+		REQUIRE(m[1].x == 3);
+		REQUIRE(m[1].y == 4);
+	}
+}
 
 TEST_CASE("operators", "[vec2]")
 {
@@ -337,11 +338,11 @@ TEST_CASE("spec::Par_5_4_2__Constructors")
 	dvec2 _dvec2(17, 18);
 	dvec3 _dvec3(19, 20, 21);
 	dvec4 _dvec4(22, 23, 24, 25);
-	//mat2 _mat2(26, 27, 28, 29);
+	mat2 _mat2(26, 27, 28, 29);
 
-	//mat4x4 _mat4x4;
-	//mat4x2 _mat4x2;
-	//mat3x3 _mat3x3;
+	mat4x4 _mat4x4;
+	mat4x2 _mat4x2;
+	mat3x3 _mat3x3;
 
 	(vec3(_float)); // initializes each component of the vec3 with the float
 	(vec4(_ivec4)); // makes a vec4 with component-wise conversion
@@ -361,30 +362,30 @@ TEST_CASE("spec::Par_5_4_2__Constructors")
 	vec4 rgba = vec4(1.0); // sets each component to 1.0
 	vec3 rgb = vec3(color); // drop the 4th component
 
-	//(mat2(_float));
-	//(mat3(_float));
-	//(mat4(_float));
+	(mat2(_float));
+	(mat3(_float));
+	(mat4(_float));
 
-	//mat2(_vec2, _vec2); // one column per argument
-	//mat3(_vec3, _vec3, _vec3); // one column per argument
-	//mat4(_vec4, _vec4, _vec4, _vec4); // one column per argument
-	//mat3x2(_vec2, _vec2, _vec2); // one column per argument
-	//dmat2(_dvec2, _dvec2);
-	//dmat3(_dvec3, _dvec3, _dvec3);
-	//dmat4(_dvec4, _dvec4, _dvec4, _dvec4);
-	//mat2(_float, _float, // first column
-	//	_float, _float); // second column
-	//mat3(_float, _float, _float, // first column
-	//	_float, _float, _float, // second column
-	//	_float, _float, _float); // third column
-	//mat4(_float, _float, _float, _float, // first column
-	//	_float, _float, _float, _float, // second column
-	//	_float, _float, _float, _float, // third column
-	//	_float, _float, _float, _float); // fourth column
-	//mat2x3(_vec2, _float, // first column
-	//	_vec2, _float); // second column
-	//dmat2x4(_dvec3, _double, // first column
-	//	_double, _dvec3); // second column
+	mat2(_vec2, _vec2); // one column per argument
+	mat3(_vec3, _vec3, _vec3); // one column per argument
+	mat4(_vec4, _vec4, _vec4, _vec4); // one column per argument
+	mat3x2(_vec2, _vec2, _vec2); // one column per argument
+	dmat2(_dvec2, _dvec2);
+	dmat3(_dvec3, _dvec3, _dvec3);
+	dmat4(_dvec4, _dvec4, _dvec4, _dvec4);
+	mat2(_float, _float, // first column
+		_float, _float); // second column
+	mat3(_float, _float, _float, // first column
+		_float, _float, _float, // second column
+		_float, _float, _float); // third column
+	mat4(_float, _float, _float, _float, // first column
+		_float, _float, _float, _float, // second column
+		_float, _float, _float, _float, // third column
+		_float, _float, _float, _float); // fourth column
+	mat2x3(_vec2, _float, // first column
+		_vec2, _float); // second column
+	dmat2x4(_dvec3, _double, // first column
+		_double, _dvec3); // second column
 
 	REQUIRE(rgb.x == Approx(0.f));
 	REQUIRE(rgb.y == Approx(1.f));

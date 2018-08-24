@@ -5,21 +5,22 @@
 namespace vml {
 
 template<
-	template<typename, size_t> class vector_type,
 	typename scalar_type,
-	size_t N, size_t M // column order
+	template<typename, size_t...> class vector_type,
+	size_t N, size_t M
 >
 struct matrix
 	//TODO: binary operators
 {
-	using column_type = vector_type<scalar_type, N>;
-	using row_type = vector_type<scalar_type, M>;
+	using column_type = typename detail::vec_equiv<scalar_type, N>::type;
+	using row_type = typename detail::vec_equiv<scalar_type, M>::type;
 
 	matrix() = default; // zeroes all data
 
 	explicit matrix(scalar_type s) // fill in diagonally
 	{
-		detail::static_for<0, std::min(N, M)>()([&](size_t i) {
+		constexpr auto num = N < M ? N : M;
+		detail::static_for<0, num>()([&](size_t i) {
 			data[i][i] = s;
 		});
 	}
@@ -60,11 +61,11 @@ private:
 		i++;
 	}
 
-	template<typename Other, size_t Other_N>
-	void construct_at_index(size_t &i, vector<Other, Other_N> &&arg)
+	template<typename Other, size_t... Other_Ns>
+	void construct_at_index(size_t &i, vector_type<Other, Other_Ns...> &&arg)
 	{
 		//TODO: do not go over N*M
-		detail::static_for<0, Other_N>()([&](size_t j) {
+		detail::static_for<0, sizeof...(Other_Ns)>()([&](size_t j) {
 			data[i / N][i % N] = arg[j];
 			i++;
 		});

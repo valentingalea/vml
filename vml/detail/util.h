@@ -54,6 +54,12 @@ template<typename, size_t>
 struct vec_equiv;
 
 template<typename T>
+struct vec_equiv<T, 1>
+{
+	using type = vector<T, 0>;
+};
+
+template<typename T>
 struct vec_equiv<T, 2>
 {
 	using type = vector<T, 0, 1>;
