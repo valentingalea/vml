@@ -1,5 +1,9 @@
 #include "../c4droid.h"
 
+#define  _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+#include "ThreadPool/include/threadpool/parallel_for_each.h"
+#undef _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+
 #include "../shader/sandbox.h"
 
 static constexpr int SCR_W8 = 240;
@@ -13,9 +17,6 @@ float sandbox::iTimeDelta	= 0; // render time (in seconds)
 #include <cassert>
 #include <cstdio>
 #include <chrono>
-
-#define _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
-#include "ThreadPool/include/threadpool/parallel_for_each.h"
 
 SDL_app::SDL_app()
 {

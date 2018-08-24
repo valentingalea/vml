@@ -6,17 +6,17 @@
 
 all: app
 
-CXXFLAGS += -std=c++17 -DC4DROID
+CXXFLAGS += -std=c++17 -DC4DROID -fsingle-precision-constant
 #-Ofast -march=native -funroll-loops
-LFLAGS += -lSDL_image -lSDL_net -ltiff -ljpeg -lpng -lz -lSDL_ttf -lfreetype -lSDL_mixer -lsmpeg -lvorbisfile -lvorbis -logg -lstdc++ -lSDL 
+
+LIBS += -lSDL
 
 OUT = app
-SIZE = -DSCR_W8=100 -DSCR_H8=100
 
 app: app.o
-	$(CXX) $(CXXFLAGS) -o $(OUT) app.o $(LFLAGS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $(OUT) app.o $(LIBS)
 app.o : SDL_app.cpp SDL_app.h
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $(SIZE) -c -o app.o $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o app.o $<
 
 clean:
 	rm *.o
