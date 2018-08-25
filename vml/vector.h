@@ -25,7 +25,7 @@ vector :
 	using scalar_type = T;
 	using vector_type = vector<T, Ns...>;
 	using base_type = typename detail::vector_base_selector<T, Ns...>::base_type;
-	using decay_type = vector_type; // typename util::vec_equiv<T, num_components>::type;
+	using decay_type = typename std::conditional<num_components == 1, scalar_type, vector_type>::type;
 
 	// bring in scope the union member
 	using base_type::data;
@@ -35,7 +35,12 @@ vector :
 		((data[Ns] = 0), ...);
 	}
 
-	/*explicit*/ vector(scalar_type s)
+	vector(typename std::conditional<num_components == 1, scalar_type, std::false_type>::type s)
+	{
+		data[0] = s;
+	}
+
+	explicit vector(typename std::conditional<num_components != 1, scalar_type, std::false_type>::type s)
 	{
 		((data[Ns] = s), ...);
 	}
@@ -71,6 +76,11 @@ vector :
 	decay_type decay() const
 	{
 		return static_cast<const decay_type&>(*this);
+	}
+
+	operator typename std::conditional<num_components == 1, scalar_type, std::false_type>::type() const
+	{
+		return data[0];
 	}
 
 	using self_type = vector_type;
