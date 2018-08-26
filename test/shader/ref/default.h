@@ -11,5 +11,5 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 	col += DrawFPS(uv);
 
 	// Output to screen
-	fragColor = vec4(clamp(col, 0, 1), 1.0);
+	fragColor = vec4(col, 1.0);
 }
