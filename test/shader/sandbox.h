@@ -6,6 +6,8 @@ using  vec2 = vml::vector<float, 0, 1>;
 
 namespace sandbox { // to isolate against std:: funcs potentially found by ADL (ex: min/max)
 
+#include "../../vml/vector_functions.h"
+
 namespace ref
 {
 	typedef vec2& vec2;

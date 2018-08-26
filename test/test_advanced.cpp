@@ -12,6 +12,7 @@
 
 #include "../vml/vector.h"
 #include "../vml/matrix.h"
+#include "../vml/vector_functions.h"
 
 using dvec4 = vml::vector<double, 0, 1, 2, 3>;
 using dvec3 = vml::vector<double, 0, 1, 2>;

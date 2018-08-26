@@ -8,10 +8,11 @@ namespace vml { namespace detail
 template<template<typename, size_t...> class vector, typename scalar_type, size_t... Ns>
 struct builtin_func_lib
 {
-#ifdef MSVC_VER
-#define INL __forceinline
+#define FUNC(x) lib_##x
+#ifdef _MSC_VER
+#define LIB static __forceinline
 #else
-#define INL __attribute__((always_inline))
+#define LIB static __attribute__((always_inline))
 #endif
 
 	using vector_type = vector<scalar_type, Ns...>;
@@ -24,49 +25,49 @@ struct builtin_func_lib
 //
 // 8.1 Angle and Trigonometry Function
 //
-	friend vector_type radians(vector_arg_type degrees)
+	LIB vector_type FUNC(radians)(vector_arg_type degrees)
 	{
 		constexpr auto pi_over_180 = scalar_type(3.14159265358979323846 / 180);
 		return vector_type((degrees.data[Ns] * pi_over_180)...);
 	}
 
-	friend vector_type degrees(vector_arg_type radians)
+	LIB vector_type FUNC(degrees)(vector_arg_type radians)
 	{
 		constexpr auto _180_over_pi = scalar_type(180 / 3.14159265358979323846);
 		return vector_type((radians.data[Ns] * _180_over_pi)...);
 	}
 
-	friend vector_type sin(vector_arg_type t)
+	LIB vector_type FUNC(sin)(vector_arg_type t)
 	{
 		return vector_type(std::sin(t.data[Ns])...);
 	}
 
-	friend vector_type cos(vector_arg_type t)
+	LIB vector_type FUNC(cos)(vector_arg_type t)
 	{
 		return vector_type(std::cos(t.data[Ns])...);
 	}
 
-	friend vector_type tan(vector_arg_type t)
+	LIB vector_type FUNC(tan)(vector_arg_type t)
 	{
 		return vector_type(std::tan(t.data[Ns])...);
 	}
 
-	friend vector_type asin(vector_arg_type t)
+	LIB vector_type FUNC(asin)(vector_arg_type t)
 	{
 		return vector_type(std::asin(t.data[Ns])...);
 	}
 
-	friend vector_type acos(vector_arg_type t)
+	LIB vector_type FUNC(acos)(vector_arg_type t)
 	{
 		return vector_type(std::acos(t.data[Ns])...);
 	}
 
-	friend vector_type atan(vector_arg_type y, vector_arg_type x)
+	LIB vector_type FUNC(atan)(vector_arg_type y, vector_arg_type x)
 	{
 		return vector_type(std::atan2(y.data[Ns] / x.data[Ns])...);
 	}
 
-	friend vector_type atan(vector_arg_type t)
+	LIB vector_type FUNC(atan)(vector_arg_type t)
 	{
 		return vector_type(std::atan(t.data[Ns])...);
 	}
@@ -76,32 +77,32 @@ struct builtin_func_lib
 //
 // 8.2 Exponential Functions
 //
-	friend vector_type pow(vector_arg_type x, vector_arg_type y)
+	LIB vector_type FUNC(pow)(vector_arg_type x, vector_arg_type y)
 	{
 		return vector_type(std::pow(x.data[Ns], y.data[Ns])...);
 	}
 
-	friend vector_type exp(vector_arg_type t)
+	LIB vector_type FUNC(exp)(vector_arg_type t)
 	{
 		return vector_type(std::exp(t.data[Ns])...);
 	}
 
-	friend vector_type log(vector_arg_type t)
+	LIB vector_type FUNC(log)(vector_arg_type t)
 	{
 		return vector_type(std::log(t.data[Ns])...);
 	}
 
-	friend vector_type exp2(vector_arg_type t)
+	LIB vector_type FUNC(exp2)(vector_arg_type t)
 	{
 		return vector_type(std::exp2(t.data[Ns])...);
 	}
 
-	friend vector_type log2(vector_arg_type t)
+	LIB vector_type FUNC(log2)(vector_arg_type t)
 	{
 		return vector_type(std::log2(t.data[Ns])...);
 	}
 
-	friend vector_type sqrt(vector_arg_type t)
+	LIB vector_type FUNC(sqrt)(vector_arg_type t)
 	{
 		return vector_type(std::sqrt(t.data[Ns])...);
 	}
@@ -111,7 +112,7 @@ struct builtin_func_lib
 		return one / std::sqrt(t); //TODO: optimize https://sites.google.com/site/burlachenkok/various_way_to_implement-rsqrtx-in-c
 	}
 
-	friend vector_type inversesqrt(vector_arg_type t)
+	LIB vector_type FUNC(inversesqrt)(vector_arg_type t)
 	{
 		return vector_type(rsqrt(t.data[Ns])...);
 	}
@@ -119,7 +120,7 @@ struct builtin_func_lib
 //
 // 8.3 Common Functions
 //
-	friend vector_type abs(vector_arg_type t)
+	LIB vector_type FUNC(abs)(vector_arg_type t)
 	{
 		return vector_type(std::abs(t.data[Ns])...);
 	}
@@ -129,143 +130,138 @@ struct builtin_func_lib
 		return (zero < x) - (x < zero);
 	}
 
-	friend vector_type sign(vector_arg_type t)
+	LIB vector_type FUNC(sign)(vector_arg_type t)
 	{
 		return vector_type(sign(t.data[Ns])...);
 	}
 
-	friend vector_type floor(vector_arg_type t)
+	LIB vector_type FUNC(floor)(vector_arg_type t)
 	{
 		return vector_type(std::floor(t.data[Ns])...);
 	}
 
-	friend vector_type trunc(vector_arg_type t)
+	LIB vector_type FUNC(trunc)(vector_arg_type t)
 	{
 		return vector_type(std::trunc(t.data[Ns])...);
 	}
 
 	//TODO: round roundEven
 
-	friend vector_type ceil(vector_arg_type t)
+	LIB vector_type FUNC(ceil)(vector_arg_type t)
 	{
 		return vector_type(std::ceil(t.data[Ns])...);
 	}
 
-	friend vector_type fract(vector_arg_type t)
+	LIB vector_type FUNC(fract)(vector_arg_type t)
 	{
 		return vector_type((t.data[Ns] - std::floor(t.data[Ns]))...);
 	}
 
-	friend vector_type mod(vector_arg_type x, scalar_type y)
+	LIB vector_type FUNC(mod)(vector_arg_type x, scalar_type y)
 	{
 		return vector_type((x.data[Ns] - y * std::floor(x.data[Ns] / y))...);
 	}
 
-	friend vector_type mod(vector_arg_type x, vector_arg_type y)
+	LIB vector_type FUNC(mod)(vector_arg_type x, vector_arg_type y)
 	{
 		return vector_type((x.data[Ns] - y.data[Ns] * std::floor(x.data[Ns] / y.data[Ns]))...);
 	}
 	
-	friend vector_type min(vector_arg_type left, vector_arg_type right)
+	LIB vector_type FUNC(min)(vector_arg_type left, vector_arg_type right)
 	{
 		return vector_type((left.data[Ns] < right.data[Ns] ? left.data[Ns] : right.data[Ns])...);
 	}
 
-	friend vector_type min(vector_arg_type left, scalar_type right)
+	LIB vector_type FUNC(min)(vector_arg_type left, scalar_type right)
 	{
 		return vector_type((left.data[Ns] < right ? left.data[Ns] : right)...);
 	}
 
-	friend vector_type max(vector_arg_type left, vector_arg_type right)
+	LIB vector_type FUNC(max)(vector_arg_type left, vector_arg_type right)
 	{
 		return vector_type((left.data[Ns] > right.data[Ns] ? left.data[Ns] : right.data[Ns])...);
 	}
 
-	friend vector_type max(vector_arg_type left, scalar_type right)
+	LIB vector_type FUNC(max)(vector_arg_type left, scalar_type right)
 	{
 		return vector_type((left.data[Ns] > right ? left.data[Ns] : right)...);
 	}
 
-	friend vector_type clamp(vector_arg_type x, vector_arg_type minVal, vector_arg_type maxVal)
+	LIB vector_type FUNC(clamp)(vector_arg_type x, vector_arg_type minVal, vector_arg_type maxVal)
 	{
-		return min(max(x, minVal), maxVal);
+		return FUNC(min)(FUNC(max)(x, minVal), maxVal);
 	}
 
-	friend vector_type clamp(vector_arg_type x, scalar_type minVal, scalar_type maxVal)
+	LIB vector_type FUNC(clamp)(vector_arg_type x, scalar_type minVal, scalar_type maxVal)
 	{
-		return min(max(x, minVal), maxVal);
+		return FUNC(min)(FUNC(max)(x, minVal), maxVal);
 	}
 
-	friend vector_type mix(vector_arg_type x, vector_arg_type y, vector_arg_type a)
+	LIB vector_type FUNC(mix)(vector_arg_type x, vector_arg_type y, vector_arg_type a)
 	{
 		return x * (vector_type(scalar_type(1)) - a) + y * a;
 	}
 
-	friend vector_type mix(vector_arg_type x, vector_arg_type y, scalar_type a)
+	LIB vector_type FUNC(mix)(vector_arg_type x, vector_arg_type y, scalar_type a)
 	{
 		return x * (scalar_type(1) - a) + y * a;
 	}
 
-	//TODO: Doesn't work
-	//friend vector_type mix(vector_arg_type x, vector_arg_type y, const bool_vector_type &a)
+	// doens't work in MSVC
+	//LIB vector_type FUNC(mix)(vector_arg_type x, vector_arg_type y, const bool_vector_type &a)
 	//{
 	//	return vector_type((a.data[Ns] ? y.data[Ns] : x.data[Ns])...);
 	//}
 
-	friend vector_type step(scalar_type edge, vector_arg_type x)
+	LIB vector_type FUNC(step)(scalar_type edge, vector_arg_type x)
 	{
 		return vector_type((x.data[Ns] < edge ? scalar_type(0) : scalar_type(1))...);
 	}
 
-	friend vector_type step(vector_arg_type edge, vector_arg_type x)
+	LIB vector_type FUNC(step)(vector_arg_type edge, vector_arg_type x)
 	{
 		return vector_type((x.data[Ns] < edge.data[Ns] ? scalar_type(0) : scalar_type(1))...);
 	}
 
-	friend vector_type smoothstep(scalar_type edge0, scalar_type edge1, vector_arg_type x)
+	LIB vector_type FUNC(smoothstep)(scalar_type edge0, scalar_type edge1, vector_arg_type x)
 	{
-		auto t = clamp((x - edge0) / (edge1 - edge0), zero, one);
+		auto t = FUNC(clamp)((x - edge0) / (edge1 - edge0), zero, one);
 		return t * t * (scalar_type(3) - scalar_type(2) * t);
 	}
 
-	friend vector_type smoothstep(vector_arg_type edge0, vector_arg_type edge1, vector_arg_type x)
+	LIB vector_type FUNC(smoothstep)(vector_arg_type edge0, vector_arg_type edge1, vector_arg_type x)
 	{
-		auto t = clamp((x - edge0) / (edge1 - edge0), zero, one);
+		auto t = FUNC(clamp)((x - edge0) / (edge1 - edge0), zero, one);
 		return t * t * (scalar_type(3) - scalar_type(2) * t);
 	}
 //
 // 8.5 Geometric functions
 //
-	friend scalar_type length(vector_arg_type v)
+	LIB scalar_type FUNC(length)(vector_arg_type v)
 	{
-		return std::sqrt(v.dot(v, v));
+		return std::sqrt(FUNC(dot)(v, v));
 	}
 
-	friend scalar_type distance(vector_arg_type p0, const vector_arg_type p1)
+	LIB scalar_type FUNC(distance)(vector_arg_type p0, const vector_arg_type p1)
 	{
-		return length(p0 - p1);
+		return FUNC(length)(p0 - p1);
 	}
 
-	friend vector_type normalize(vector_arg_type v)
+	LIB vector_type FUNC(normalize)(vector_arg_type v)
 	{
 		vector_type out = v;
-		out /= length(v);
+		out /= FUNC(length)(v);
 		return out;
 	}
 
-	scalar_type dot(vector_arg_type a, vector_arg_type b) const // needs to be member otherwise fold expression doesn't work
+	LIB scalar_type FUNC(dot)(vector_arg_type a, vector_arg_type b)
 	{
 		scalar_type sum = 0;
 		((sum += a.data[Ns] * b.data[Ns]), ...);
 		return sum;
 	}
 
-	friend scalar_type dot(vector_arg_type a, vector_arg_type b)
-	{
-		return a.dot(a, b);
-	}
-
-	friend vector_type cross(vector_arg_type a, vector_arg_type b)
+	LIB vector_type FUNC(cross)(vector_arg_type a, vector_arg_type b)
 	{
 		static_assert(vector_type::num_components == 3, "cross product only works for vec3");
 
@@ -276,84 +272,94 @@ struct builtin_func_lib
 		);
 	}
 
-	friend vector_type faceforward(vector_arg_type N, vector_arg_type I, vector_arg_type Nref)
+	LIB vector_type FUNC(faceforward)(vector_arg_type N, vector_arg_type I, vector_arg_type Nref)
 	{
-		return (N.dot(Nref, I) < scalar_type(0) ? N : (-N));
+		return (FUNC(dot)(Nref, I) < scalar_type(0) ? N : (-N));
 	}
 
-	friend vector_type reflect(vector_arg_type I, vector_arg_type N)
+	LIB vector_type FUNC(reflect)(vector_arg_type I, vector_arg_type N)
 	{
-		return (I - scalar_type(2) * N.dot(I, N) * N);
+		return (I - scalar_type(2) * FUNC(dot)(I, N) * N);
 	}
 
-	friend vector_type refract(vector_arg_type I, vector_arg_type N, scalar_type eta)
+	LIB vector_type FUNC(refract)(vector_arg_type I, vector_arg_type N, scalar_type eta)
 	{
-		auto k = one - eta * eta * (one - N.dot(N, I) * N.dot(N, I));
+		auto k = one - eta * eta * (one - FUNC(dot)(N, I) * FUNC(dot)(N, I));
 		if (k < zero) {
 			return vector_type();
 		} else {
-			return eta * I - (eta * N.dot(N, I) + sqrt(k)) * N;
+			return eta * I - (eta * FUNC(dot)(N, I) + sqrt(k)) * N;
 		}
 	}
 
 //
 // 8.7 Vector Relational Functions
 //
-	friend bool_vector_type lessThan(vector_arg_type x, vector_arg_type y)
+	LIB bool_vector_type FUNC(lessThan)(vector_arg_type x, vector_arg_type y)
 	{
 		return bool_vector_type((x.data[Ns] < y.data[Ns])...);
 	}
 
-	friend bool_vector_type lessThanEqual(vector_arg_type x, vector_arg_type y)
+	LIB bool_vector_type FUNC(lessThanEqual)(vector_arg_type x, vector_arg_type y)
 	{
 		return bool_vector_type((x.data[Ns] <= y.data[Ns])...);
 	}
 
-	friend bool_vector_type greaterThan(vector_arg_type x, vector_arg_type y)
+	LIB bool_vector_type FUNC(greaterThan)(vector_arg_type x, vector_arg_type y)
 	{
 		return bool_vector_type((x.data[Ns] > y.data[Ns])...);
 	}
 
-	friend bool_vector_type greaterThanEqual(vector_arg_type x, vector_arg_type y)
+	LIB bool_vector_type FUNC(greaterThanEqual)(vector_arg_type x, vector_arg_type y)
 	{
 		return bool_vector_type((x.data[Ns] >= y.data[Ns])...);
 	}
 
-	friend bool_vector_type equal(vector_arg_type x, vector_arg_type y)
+	LIB bool_vector_type FUNC(equal)(vector_arg_type x, vector_arg_type y)
 	{
 		return bool_vector_type((x.data[Ns] == y.data[Ns])...);
 	}
 
-	friend bool_vector_type notEqual(vector_arg_type x, vector_arg_type y)
+	LIB bool_vector_type FUNC(notEqual)(vector_arg_type x, vector_arg_type y)
 	{
 		return bool_vector_type((x.data[Ns] != y.data[Ns])...);
 	}
-#if 0 //TODO: MSVC bug
-	bool any(const bool_vector_type &b) const
+
+	LIB bool FUNC(any)(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, std::false_type>::type b)
 	{
 		return (... || b.data[Ns]);
 	}
-	friend bool any(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, std::false_type>::type b)
-	{
-		return b.any(b); // MSVC: doesn't see the pack expansion if tried here
-	}
 
-	bool all(const bool_vector_type &b) const
+	LIB  bool FUNC(all)(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, std::false_type>::type b)
 	{
 		return (... && b.data[Ns]);
 	}
-	friend bool all(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, std::false_type>::type b)
-	{
-		return b.all(b);
-	}
 
-	friend bool_vector_type _not(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, std::false_type>::type b)
+	LIB bool_vector_type FUNC(_not)(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, std::false_type>::type b)
 	{
 		return bool_vector_type((!b.data[Ns])...);
 	}
-#endif
 
-#undef INL
+//
+// 8.13.1 Derivative Functions
+// NOTE: can only fake these
+	LIB vector_type FUNC(dFdx)(vector_arg_type p)
+	{
+		return p * scalar_type(.01);
+	}
+
+	LIB vector_type FUNC(dFdy)(vector_arg_type p)
+	{
+		return p * scalar_type(.01);
+	}
+
+	LIB vector_type FUNC(fwidth)(vector_arg_type p)
+	{
+		return FUNC(abs)(FUNC(dFdx)(p)) + FUNC(abs)(FUNC(dFdy)(p));
+	}
+
+#undef LIB
+#undef FUNC
 };
 
 } } // namespace vml::detail

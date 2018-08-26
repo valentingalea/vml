@@ -83,14 +83,14 @@ struct matrix<scalar_type, vector_type, indices_pack<Columns...>, indices_pack<R
 	static column_type mul(const matrix &m, const row_type &v)
 	{
 		column_type out;
-		((out[Rows] = dot(v, m.row(Rows))), ...);
+		((out[Rows] = v.lib_dot(v, m.row(Rows))), ...);
 		return out;
 	}
 
 	static row_type mul(const column_type &v, const matrix &m)
 	{
 		row_type out;
-		((out[Columns] = dot(v, m.column(Columns))), ...);
+		((out[Columns] = v.lib_dot(v, m.column(Columns))), ...);
 		return out;
 	}
 

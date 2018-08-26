@@ -38,17 +38,18 @@ constexpr auto decay(T&& t) -> decltype(t.decay())
 
 template <class T>
 constexpr typename std::enable_if<
-	std::is_scalar<typename std::remove_reference<T>::type >::value, T>::type
+	std::is_arithmetic<typename std::remove_reference<T>::type >::value, T>::type
 decay(T&& t)
 {
 	return t;
 }
 
-template<typename V, typename... Ts>
-constexpr bool converts_to()
+// will be available in C++20
+template<class T>
+struct remove_cvref
 {
-	return (std::is_convertible<Ts, V>::value || ...);
-}
+	using type = std::remove_cv_t<std::remove_reference_t<T>>;
+};
 
 template<typename, size_t>
 struct vec_equiv;

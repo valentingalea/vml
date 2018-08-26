@@ -18,7 +18,8 @@ __declspec(empty_bases) // https://blogs.msdn.microsoft.com/vcblog/2016/03/30/op
 vector :
 	public detail::vector_base_selector<T, Ns...>::base_type,
 	public detail::builtin_func_lib<vector, T, Ns...>,
-	public detail::binary_vec_ops<vector<T, Ns...>, T>
+	public std::conditional<sizeof...(Ns) != 1, // no binary ops for promoted scalar
+		detail::binary_vec_ops<vector<T, Ns...>, T>, std::false_type>::type
 {
 	static constexpr auto num_components = sizeof...(Ns);
 
@@ -108,3 +109,6 @@ private:
 };
 
 } // namespace vml
+
+// needs to be after everything has been defined
+#include "detail/traits.h"

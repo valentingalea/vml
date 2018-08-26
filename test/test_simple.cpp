@@ -18,9 +18,17 @@ using mat2 = vml::matrix<float, vml::vector, _01, _01>;
 using mat3 = vml::matrix<float, vml::vector, _012, _012>;
 using mat3x2 = vml::matrix<float, vml::vector, _012, _01>;
 
+#include "../vml/vector_functions.h"
+
 int main ()
 {
+	using bvec3 = vml::vector<bool, 0, 1, 2>;
+	bvec3 b;
+	auto bb = any(b);
+
 	auto v = vec3(42.f);
+
+	float q = radians(3.14);
 
 	v *= 1.f;
 	v *= v.bbb;
