@@ -25,8 +25,8 @@ struct matrix<scalar_type, vector_type, indices_pack<Columns...>, indices_pack<R
 {
 	static constexpr auto N = sizeof...(Columns);
 	static constexpr auto M = sizeof...(Rows);
-	using column_type = vector_type<scalar_type, Columns...>; //typename detail::vec_equiv<scalar_type, N>::type;
-	using row_type = vector_type<scalar_type, Rows...>; //typename detail::vec_equiv<scalar_type, M>::type;
+	using column_type = vector_type<scalar_type, Columns...>;
+	using row_type = vector_type<scalar_type, Rows...>;
 
 	matrix() = default; // zeroes all data
 

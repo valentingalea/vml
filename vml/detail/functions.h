@@ -325,17 +325,17 @@ struct builtin_func_lib
 		return bool_vector_type((x.data[Ns] != y.data[Ns])...);
 	}
 
-	LIB bool FUNC(any)(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, std::false_type>::type b)
+	LIB bool FUNC(any)(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, nothing>::type b)
 	{
 		return (... || b.data[Ns]);
 	}
 
-	LIB  bool FUNC(all)(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, std::false_type>::type b)
+	LIB  bool FUNC(all)(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, nothing>::type b)
 	{
 		return (... && b.data[Ns]);
 	}
 
-	LIB bool_vector_type FUNC(_not)(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, std::false_type>::type b)
+	LIB bool_vector_type FUNC(_not)(typename std::conditional<std::is_same<scalar_type, bool>::value, vector_arg_type, nothing>::type b)
 	{
 		return bool_vector_type((!b.data[Ns])...);
 	}

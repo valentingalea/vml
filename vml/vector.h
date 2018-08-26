@@ -2,10 +2,10 @@
 
 #include <type_traits>
 
+#include "detail/util.h"
 #include "detail/swizzler.h"
 #include "detail/functions.h"
 #include "detail/binary_ops.h"
-#include "detail/util.h"
 
 #include "vector_base.h"
 
@@ -19,7 +19,7 @@ vector :
 	public detail::vector_base_selector<T, Ns...>::base_type,
 	public detail::builtin_func_lib<vector, T, Ns...>,
 	public std::conditional<sizeof...(Ns) != 1, // no binary ops for promoted scalar
-		detail::binary_vec_ops<vector<T, Ns...>, T>, std::false_type>::type
+		detail::binary_vec_ops<vector<T, Ns...>, T>, detail::nothing>::type
 {
 	static constexpr auto num_components = sizeof...(Ns);
 
@@ -36,12 +36,12 @@ vector :
 		((data[Ns] = 0), ...);
 	}
 
-	vector(typename std::conditional<num_components == 1, scalar_type, std::false_type>::type s)
+	vector(typename std::conditional<num_components == 1, scalar_type, detail::nothing>::type s)
 	{
 		data[0] = s;
 	}
 
-	explicit vector(typename std::conditional<num_components != 1, scalar_type, std::false_type>::type s)
+	explicit vector(typename std::conditional<num_components != 1, scalar_type, detail::nothing>::type s)
 	{
 		((data[Ns] = s), ...);
 	}
@@ -79,7 +79,7 @@ vector :
 		return static_cast<const decay_type&>(*this);
 	}
 
-	operator typename std::conditional<num_components == 1, scalar_type, std::false_type>::type() const
+	operator typename std::conditional<num_components == 1, scalar_type, detail::nothing>::type() const
 	{
 		return data[0];
 	}
