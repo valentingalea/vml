@@ -26,7 +26,7 @@ SDL2_app::SDL2_app()
 			"vml",
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 			SCR_W8, SCR_H8,
-			0
+			SDL_WINDOW_OPENGL
 		),
 		SDL_DestroyWindow
 	);
@@ -49,7 +49,7 @@ SDL2_app::SDL2_app()
 	Texture.reset(
 		SDL_CreateTexture(
 			Renderer.get(),
-			SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING,
+			SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
 			SCR_W8, SCR_H8
 		),
 		SDL_DestroyTexture
