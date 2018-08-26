@@ -64,13 +64,6 @@ TEST_CASE("vec2 basic init", "[vec2]")
 		REQUIRE(v.y == 41);
 	}
 
-//TODO: implement
-	//SECTION("via init list") {
-	//	ivec2 v = { 3, 4 };
-	//	REQUIRE(v.x == 3);
-	//	REQUIRE(v.y == 4);
-	//}
-
 	SECTION("direct init") {
 		ivec2 v = ivec2(3, 4);
 		REQUIRE(v.x == 3);
@@ -129,7 +122,7 @@ TEST_CASE("swizzle construct", "[vec2][vec3]")
 		REQUIRE(rep.z == 3);
 	}
 
-//TODO: can this ever work?
+//NOTE: this will never work unless C++ gets operator.
 	//SECTION("swizzle chain") {
 	//	ivec3 rep = v.zzz.xyz;
 	//	REQUIRE(rep.x == 3);
@@ -329,7 +322,7 @@ TEST_CASE("builtin functions")
 		auto ffwd = faceforward(N, I, vec3(1.f, 0.f, 0.f));
 		REQUIRE(ffwd.y == Approx(-1.f));
 	}
-#if 0 //TODO: disabled because of MSVC
+
 	SECTION("logical")
 	{
 		auto a = vec3(1, 2, 3);
@@ -345,7 +338,6 @@ TEST_CASE("builtin functions")
 		REQUIRE(neq.y == false);
 		REQUIRE(neq.z == false);
 	}
-#endif
 }
 
 TEST_CASE("union member access")
@@ -370,7 +362,7 @@ TEST_CASE("inout args")
 	auto v = vec3(0);
 	inout_func(v);
 
-	//TODO: https://github.com/gwiazdorrr/CxxSwizzle/issues/4
+	//NOTE: limitation of current design because everything is returned by value
 	//inout_func(v.xyz);
 }
 
