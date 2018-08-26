@@ -12,6 +12,8 @@ static constexpr int SCR_H8 = 240;
  vec3 sandbox::iResolution	= vec3(SCR_W8, SCR_H8, 0); // viewport resolution (in pixels)
 float sandbox::iTime		= 0; // shader playback time (in seconds)
 float sandbox::iTimeDelta	= 0; // render time (in seconds)
+ vec4 sandbox::iMouse;			 // mouse pixel coords. xy: current (if MLB down), zw: click
+ vec4 sandbox::iDate;			 // (year, month, day, time in seconds)
 
 #include "SDL_app.h"
 #include <cassert>

@@ -64,7 +64,7 @@ struct builtin_func_lib
 
 	LIB vector_type FUNC(atan)(vector_arg_type y, vector_arg_type x)
 	{
-		return vector_type(std::atan2(y.data[Ns] / x.data[Ns])...);
+		return vector_type(std::atan2(y.data[Ns], x.data[Ns])...);
 	}
 
 	LIB vector_type FUNC(atan)(vector_arg_type t)
