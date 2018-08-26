@@ -1,5 +1,11 @@
 #pragma once
 
+#ifdef _MSC_VER
+#define _MSC_FIX_EBO __declspec(empty_bases) // https://blogs.msdn.microsoft.com/vcblog/2016/03/30/optimizing-the-layout-of-empty-base-classes-in-vs2015-update-2-3/
+#else
+#define _MSC_FIX_EBO
+#endif
+
 namespace vml { namespace detail {
 
 struct nothing {};

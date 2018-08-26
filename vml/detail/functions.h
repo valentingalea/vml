@@ -109,7 +109,7 @@ struct builtin_func_lib
 
 	scalar_type rsqrt(scalar_type t)
 	{
-		return one / std::sqrt(t); //TODO: optimize https://sites.google.com/site/burlachenkok/various_way_to_implement-rsqrtx-in-c
+		return one / std::sqrt(t); //NOTE: https://sites.google.com/site/burlachenkok/various_way_to_implement-rsqrtx-in-c
 	}
 
 	LIB vector_type FUNC(inversesqrt)(vector_arg_type t)

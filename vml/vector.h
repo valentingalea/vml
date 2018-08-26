@@ -10,11 +10,8 @@
 
 namespace vml {
 
-template<typename T, size_t... Ns> struct
-#ifdef _MSC_VER
-__declspec(empty_bases) // https://blogs.msdn.microsoft.com/vcblog/2016/03/30/optimizing-the-layout-of-empty-base-classes-in-vs2015-update-2-3/
-#endif
-vector :
+template<typename T, size_t... Ns>
+struct _MSC_FIX_EBO vector :
 	public detail::vector_base_selector<T, Ns...>::base_type,
 	public detail::builtin_func_lib<vector, T, Ns...>,
 	public std::conditional<sizeof...(Ns) != 1, // no binary ops for promoted scalar
