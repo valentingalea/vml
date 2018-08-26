@@ -6,8 +6,7 @@
 #include "detail/swizzler.h"
 #include "detail/functions.h"
 #include "detail/binary_ops.h"
-
-#include "vector_base.h"
+#include "detail/vector_base.h"
 
 namespace vml {
 
