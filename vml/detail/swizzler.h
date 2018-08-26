@@ -31,6 +31,10 @@ struct swizzler
 		return *this;
 	}
 
+	//TODO: constrain the assignment only when indices are different
+
+	//TODO: impl unary ops
+
 private:
 	template<typename... Indices>
 	void assign_across(vector_type &vec, size_t i, Indices ...swizz_i) const
