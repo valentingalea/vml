@@ -1,4 +1,34 @@
-VML
-===
+= VML
 
-C++17 GLSL-shader flavour vector and matrix math lib
+C++17 GLSL vector and matrix math library. Fast debug support.
+
+== Quick Usage
+
+.Introduce the GLSL types
+[source, cpp]
+using vec3 = vml::vector<float, 0, 1, 2>;
+using mat3 = vml::matrix<float, vml::vector, vml::indices_pack<0, 1, 2>, vml::indices_pack<0, 1, 2>>;
+
+.Compile shader code as C++
+[source, cpp]
+-----
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // Normalized pixel coordinates (from 0 to 1)
+    vec2 uv = fragCoord/iResolution.xy;
+
+    // Time varying pixel color
+    vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
+
+    // Output to screen
+    fragColor = vec4(col,1.0);
+}
+-----
+
+Debug!
+
+image::https://i.imgur.com/NH3qB2e.png[debug]
+
+== Credits
+
+Inspired by and borrowed major ideas from https://github.com/gwiazdorrr/CxxSwizzle[CxxSwizzle]
