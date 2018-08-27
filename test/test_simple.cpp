@@ -4,21 +4,19 @@
 
 #include "../vml/vector.h"
 #include "../vml/matrix.h"
+#include "../vml/vector_functions.h"
 
 using  vec4 = vml::vector<float, 0, 1, 2, 3>;
 using  vec3 = vml::vector<float, 0, 1, 2>;
 using  vec2 = vml::vector<float, 0, 1>;
-using ivec4 = vml::vector<  int, 0, 1, 2, 3>;
-using ivec3 = vml::vector<  int, 0, 1, 2>;
-using ivec2 = vml::vector<  int, 0, 1>;
+using   _01 = vml::indices_pack<0, 1>;
+using  _012 = vml::indices_pack<0, 1, 2>;
+using _0123 = vml::indices_pack<0, 1, 2, 3>;
+using  mat2 = vml::matrix<float, vml::vector, _01, _01>;
+using  mat3 = vml::matrix<float, vml::vector, _012, _012>;
+using  mat4 = vml::matrix<float, vml::vector, _0123, _0123>;
 
-using  _01 = vml::indices_pack<0, 1>;
-using _012 = vml::indices_pack<0, 1, 2>;
-using mat2 = vml::matrix<float, vml::vector, _01, _01>;
-using mat3 = vml::matrix<float, vml::vector, _012, _012>;
-using mat3x2 = vml::matrix<float, vml::vector, _012, _01>;
 
-#include "../vml/vector_functions.h"
 
 int main ()
 {

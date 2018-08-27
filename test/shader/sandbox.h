@@ -15,32 +15,27 @@ namespace sandbox { // to isolate against std:: funcs potentially found by ADL (
 
 #include "../../vml/vector_functions.h"
 
-namespace ref
+namespace funccall_inout
 {
-	typedef vec2& vec2;
-	typedef vec3& vec3;
-	typedef vec4& vec4;
-}
-
-namespace in
-{
-	typedef const ::vec2& vec2;
-	typedef const ::vec3& vec3;
-	typedef const ::vec4& vec4;
+	using vec2 = vec2 &;
+	using vec3 = vec3 &;
+	using vec4 = vec4 &;
+	using mat2 = mat2 &;
+	using mat3 = mat3 &;
+	using mat4 = mat4 &;
 }
 
 struct fragment_shader
 {
 	vec2 gl_FragCoord;
 	vec4 gl_FragColor;
-	void mainImage(vec4 &fragColor, vec2 fragCoord);
+	void main(vec4 &fragColor, vec2 fragCoord); // Shadertoy.com
 };
 
-#define uniform extern
 #define in
-#define out ref::
-#define inout ref::
-#define mainImage fragment_shader::mainImage
+#define out funccall_inout::
+#define inout funccall_inout::
+#define uniform extern
 
 // verbatim from Shadertoy.com
 uniform vec3      iResolution;           // viewport resolution (in pixels)
@@ -53,6 +48,7 @@ uniform vec4      iMouse;                // mouse pixel coords. xy: current (if 
 uniform vec4      iDate;                 // (year, month, day, time in seconds)
 uniform float     iSampleRate;           // sound sample rate (i.e., 44100)
 float &			  iGlobalTime = iTime;	 // old name
+#define mainImage fragment_shader::main
 
 /***** SHADERBOX *************************************************************/
 #if defined(APP_EGG)
@@ -79,10 +75,11 @@ float &			  iGlobalTime = iTime;	 // old name
 #endif
 /*****************************************************************************/
 
+#undef mainImage
+
 #undef in
 #undef out
 #undef inout
 #undef uniform
-#undef main
 
 } // namespace sandbox

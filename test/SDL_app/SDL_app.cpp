@@ -124,7 +124,7 @@ struct Worker
 			uint8_t * ptr = reinterpret_cast<uint8_t*>(bmp->pixels) + y * bmp->pitch;
 			for (int x = 0; x < bmp->w; ++x) {
 				shader.gl_FragCoord = vec2(static_cast<float>(x), bmp->h - 1.0f - y);
-				shader.mainImage(shader.gl_FragColor, shader.gl_FragCoord);
+				shader.main(shader.gl_FragColor, shader.gl_FragCoord);
 				const auto color = sandbox::clamp(shader.gl_FragColor, 0.0f, 1.0f);
 
 				*ptr++ = static_cast<uint8_t>(255 * color.r + 0.5f);
