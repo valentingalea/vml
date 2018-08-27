@@ -1,6 +1,6 @@
 = VML
 
-C++17 GLSL vector and matrix math library. Fast debug support.
+C++17 GLSL vector and matrix math library. Tweaked for best debug code gen.
 
 == Quick Usage
 
@@ -29,6 +29,8 @@ Debug!
 
 image::https://i.imgur.com/NH3qB2e.png[debug]
 
-== Credits
+== About
 
-Inspired by and borrowed major ideas from https://github.com/gwiazdorrr/CxxSwizzle[CxxSwizzle]
+Inspired by and borrowed major ideas from https://github.com/gwiazdorrr/CxxSwizzle[CxxSwizzle] but mine is engineered for best possible debug code gen.
+
+It includes a SDL based sample app that runs GLSL shaders in a software rasterizer. It can get decent framerates for simple/medium complexity shaders.
