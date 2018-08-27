@@ -54,9 +54,30 @@ uniform vec4      iDate;                 // (year, month, day, time in seconds)
 uniform float     iSampleRate;           // sound sample rate (i.e., 44100)
 float &			  iGlobalTime = iTime;	 // old name
 
-/* >>>>>>>>>>>>> SHADER GOES HERE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/
+/***** SHADERBOX *************************************************************/
+#if defined(APP_EGG)
+#include <app_egg.h>
+#elif defined(APP_RAYTRACER)
+#include <app_raytracer.h>
+#elif defined(APP_SDF_AO)
+#include <app_sdf_ao.h>
+#elif defined(APP_CLOUDS)
+//#include <app_clouds.h>
+#include <app_clouds_best.h>
+#elif defined(APP_ATMOSPHERE)
+#include <app_atmosphere.h>
+#elif defined(APP_2D)
+#include <app_2d.h>
+#elif defined(APP_PLANET)
+#include <app_planet.h>
+#elif defined(APP_FUNC)
+#include <app_func.h>
+#elif defined(APP_VINYL)
+#include <app_vinyl.h>
+#else
 #include "ref/default.h"
-/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
+#endif
+/*****************************************************************************/
 
 #undef in
 #undef out
