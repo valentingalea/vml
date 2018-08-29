@@ -1,0 +1,37 @@
+language: cpp
+
+os: linux
+dist: trusty
+
+matrix:
+include:
+    # GCC 8
+    - env: COMPILER=g++-8 BUILD_TYPE=Debug
+      addons: &gcc8
+        apt:
+          packages: g++-8
+          sources: ubuntu-toolchain-r-test
+
+    #- env: COMPILER=g++-8 BUILD_TYPE=Release
+    #  addons: *gcc8
+
+    # Clang 6.0
+    - env: COMPILER=clang++-6.0 BUILD_TYPE=Debug
+      addons: &clang6
+        apt:
+          packages:
+            - clang-6.0
+            - g++-6
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+
+    #- env: COMPILER=clang++-6.0 BUILD_TYPE=Release
+    #  addons: *clang6
+
+script:
+  - cd "${TRAVIS_BUILD_DIR}"
+  - cd cmake/build
+  - cmake ../../ -DCMAKE_CXX_COMPILER=$COMPILER -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+  - cmake --build . --config $BUILD_TYPE --target=test_advanced
+  - ./test_advanced
