@@ -30,6 +30,9 @@ include:
     #- env: COMPILER=clang++-6.0 BUILD_TYPE=Release
     #  addons: *clang6
 
+install:
+  - install $COMPILER toolchain
+  
 script:
   - cd "${TRAVIS_BUILD_DIR}"
   - cd cmake/build
