@@ -31,7 +31,8 @@ include:
     #  addons: *clang6
 
 install:
-  - install $COMPILER toolchain
+  - export CXX=${COMPILER}
+  - ${CXX} --version
   
 script:
   - cd "${TRAVIS_BUILD_DIR}"
