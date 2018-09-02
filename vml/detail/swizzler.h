@@ -6,6 +6,8 @@ namespace vml { namespace detail
 template<typename vector_type, typename T, size_t N, size_t... indices>
 struct swizzler
 {
+	static constexpr auto num_components = N;
+
 	T data[N]; // N might differ from vector_type::num_components ex: .xxxx from vec3
 
 	vector_type decay() const

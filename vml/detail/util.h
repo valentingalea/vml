@@ -51,4 +51,14 @@ struct remove_cvref
 	using type = std::remove_cv_t<std::remove_reference_t<T>>;
 };
 
+template <class T>
+constexpr size_t get_size()
+{
+	if constexpr (std::is_arithmetic<typename remove_cvref<T>::type>::value) {
+		return 1;
+	} else {
+		return remove_cvref<T>::type::num_components;
+	}
+}
+
 } }

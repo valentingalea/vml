@@ -49,15 +49,19 @@ struct _MSC_FIX_EBO vector :
 		>::type>
 	explicit vector(A0&& a0, Args&&... args)
 	{
+#if 1
 		static_assert((sizeof...(args) <= num_components), "too many arguments");
 
 		size_t i = 0; //TODO: get rid of this and introduce template get_size
 
-		// consume the first one
+					  // consume the first one
 		construct_at_index(i, detail::decay(std::forward<A0>(a0)));
 
 		// consume the rest, if any
 		(construct_at_index(i, detail::decay(std::forward<Args>(args))), ...);
+#else
+		iterate_construct<0, num_components>(std::forward<A0>(a0), std::forward<Args>(args)...);
+#endif
 	}
 
 	scalar_type const operator[](size_t i) const
@@ -88,6 +92,20 @@ struct _MSC_FIX_EBO vector :
 	//TODO: add matrix multiply
 
 private:
+	template<size_t I, size_t IMax, typename Arg0, typename... Args>
+	void iterate_construct(Arg0&& a0, Args&&... args)
+	{
+		if constexpr (I < IMax) {
+			size_t i = I;
+			construct_at_index(i, detail::decay(std::forward<Arg0>(a0)));
+			iterate_construct<I + detail::get_size<Arg0>(), IMax>(std::forward<Args>(args)...);
+		}
+	}
+
+	template<size_t I, size_t IMax>
+	void iterate_construct()
+	{}
+
 	void construct_at_index(size_t &i, scalar_type arg)
 	{
 		data[i++] = arg;
