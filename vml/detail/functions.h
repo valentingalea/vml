@@ -107,7 +107,7 @@ struct builtin_func_lib
 		return vector_type(std::sqrt(t.data[Ns])...);
 	}
 
-	scalar_type rsqrt(scalar_type t)
+	LIB scalar_type rsqrt(scalar_type t)
 	{
 		return one / std::sqrt(t); //NOTE: https://sites.google.com/site/burlachenkok/various_way_to_implement-rsqrtx-in-c
 	}
@@ -125,7 +125,7 @@ struct builtin_func_lib
 		return vector_type(std::abs(t.data[Ns])...);
 	}
 
-	scalar_type sign(scalar_type x)
+	LIB scalar_type sign(scalar_type x)
 	{
 		return (zero < x) - (x < zero);
 	}
@@ -242,7 +242,7 @@ struct builtin_func_lib
 		return std::sqrt(FUNC(dot)(v, v));
 	}
 
-	LIB scalar_type FUNC(distance)(vector_arg_type p0, const vector_arg_type p1)
+	LIB scalar_type FUNC(distance)(vector_arg_type p0, vector_arg_type p1)
 	{
 		return FUNC(length)(p0 - p1);
 	}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <utility>
 
 #include "detail/util.h"
 #include "detail/swizzler.h"
