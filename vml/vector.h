@@ -59,7 +59,7 @@ struct _MSC_FIX_EBO vector :
 		 construct_at_index(i, detail::decay(std::forward<A0>(a0)));
 		(construct_at_index(i, detail::decay(std::forward<Args>(args))), ...);
 #else
-		iterate_construct<0, num_components>(std::forward<A0>(a0), std::forward<Args>(args)...);
+		static_recurse<0>(std::forward<A0>(a0), std::forward<Args>(args)...);
 #endif
 	}
 
@@ -91,22 +91,7 @@ struct _MSC_FIX_EBO vector :
 	//TODO: add matrix multiply
 
 private:
-#ifndef CTOR_FOLD
-	template<size_t I, size_t IMax, typename Arg0, typename... Args>
-	void iterate_construct(Arg0&& a0, Args&&... args)
-	{
-		if constexpr (I < IMax) {
-			size_t i = I;
-			construct_at_index(i, detail::decay(std::forward<Arg0>(a0)));
-			iterate_construct<I + detail::get_size<Arg0>(), IMax>(std::forward<Args>(args)...);
-		}
-	}
-
-	template<size_t I, size_t IMax>
-	void iterate_construct()
-	{}
-#endif
-
+#ifdef CTOR_FOLD
 	void construct_at_index(size_t &i, scalar_type arg)
 	{
 		data[i++] = arg;
@@ -122,6 +107,34 @@ private:
 			data[i++] = arg.data[j];
 		});
 	}
+#else
+	template<size_t i>
+	void construct_at_index(scalar_type arg)
+	{
+		data[i] = arg;
+	}
+
+	template<size_t i, typename Other, size_t... Other_Ns>
+	void construct_at_index(const vector<Other, Other_Ns...> &arg)
+	{
+		constexpr auto other_num = vector<Other, Other_Ns...>::num_components;
+		constexpr auto count = (i + other_num) > num_components ? num_components : (i + other_num);
+		detail::static_for<i, count>()([&](size_t j) {
+			data[j] = arg.data[j - i];
+		});
+	}
+
+	template<size_t I, typename Arg0, typename... Args>
+	void static_recurse(Arg0&& a0, Args&&... args)
+	{
+		construct_at_index<I>(detail::decay(std::forward<Arg0>(a0)));
+		static_recurse<I + detail::get_size<Arg0>()>(std::forward<Args>(args)...);
+	}
+
+	template<size_t I>
+	void static_recurse()
+	{}
+#endif
 };
 
 } // namespace vml
