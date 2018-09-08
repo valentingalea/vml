@@ -50,15 +50,13 @@ struct _MSC_FIX_EBO vector :
 		>::type>
 	explicit vector(A0&& a0, Args&&... args)
 	{
-#if 1
-		static_assert((sizeof...(args) <= num_components), "too many arguments");
+		static_assert((sizeof...(args) < num_components), "too many arguments");
 
-		size_t i = 0; //TODO: get rid of this and introduce template get_size
+#define CTOR_FOLD
+#ifdef CTOR_FOLD
+		size_t i = 0;
 
-					  // consume the first one
-		construct_at_index(i, detail::decay(std::forward<A0>(a0)));
-
-		// consume the rest, if any
+		 construct_at_index(i, detail::decay(std::forward<A0>(a0)));
 		(construct_at_index(i, detail::decay(std::forward<Args>(args))), ...);
 #else
 		iterate_construct<0, num_components>(std::forward<A0>(a0), std::forward<Args>(args)...);
@@ -93,6 +91,7 @@ struct _MSC_FIX_EBO vector :
 	//TODO: add matrix multiply
 
 private:
+#ifndef CTOR_FOLD
 	template<size_t I, size_t IMax, typename Arg0, typename... Args>
 	void iterate_construct(Arg0&& a0, Args&&... args)
 	{
@@ -106,6 +105,7 @@ private:
 	template<size_t I, size_t IMax>
 	void iterate_construct()
 	{}
+#endif
 
 	void construct_at_index(size_t &i, scalar_type arg)
 	{
@@ -115,8 +115,9 @@ private:
 	template<typename Other, size_t... Other_Ns>
 	void construct_at_index(size_t &i, const vector<Other, Other_Ns...> &arg)
 	{
-		constexpr auto count = num_components <= vector<Other, Other_Ns...>::num_components ?
-			num_components : vector<Other, Other_Ns...>::num_components;
+		constexpr auto other_num = vector<Other, Other_Ns...>::num_components;
+		constexpr auto count = num_components <= other_num ? num_components : other_num;
+
 		detail::static_for<0, count>()([&](size_t j) {
 			data[i++] = arg.data[j];
 		});
