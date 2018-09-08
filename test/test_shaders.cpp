@@ -8,4 +8,6 @@ float sandbox::iTimeDelta = 0.f;
 
 int main()
 {
+	sandbox::fragment_shader ps;
+	ps.main(ps.gl_FragColor, vec2(0));
 }
