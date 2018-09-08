@@ -6,17 +6,19 @@
 
 all: app
 
+APP = #-DAPP_PLANET
+SIZE = -DSCR_W8=240 -DSCR_H8=240
+
 CXXFLAGS += -std=c++17 -DC4DROID -fsingle-precision-constant
-#-Ofast -march=native -funroll-loops
+#CXXFLAGS += -Ofast -march=native -funroll-loops
 
 LIBS += -lSDL
-
 OUT = app
 
 app: app.o
 	$(CXX) $(CXXFLAGS) -o $(OUT) app.o $(LIBS)
 app.o : SDL_app.cpp SDL_app.h
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o app.o $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(APP) $(SIZE) -c -o app.o $<
 
 clean:
 	rm *.o

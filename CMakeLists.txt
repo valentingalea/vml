@@ -1,10 +1,10 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.0.2)
 
 project (VML)
 
 if (MSVC)
 	add_compile_options(/W4 /permissive- /std:c++17 /fp:fast /fp:except-)
-	if (${CMAKE_BUILD_TYPE} EQUAL "RelWithDebInfo")
+	if (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 		add_compile_options(/O2 /Ob2 /Oi /Ot /Oy /Gy /GR- /arch:AVX /GL)
 		#set(${CMAKE_EXE_LINKER_FLAGS} "/LTCG /DEBUG:NONE")
 	endif()
@@ -23,6 +23,7 @@ find_package(SDL)
 include_directories(${SDL_INCLUDE_DIR})
 add_executable(SDL_app test/SDL_app/SDL_app.h test/SDL_app/SDL_app.cpp)
 target_link_libraries(SDL_app ${SDL_LIBRARY})
+target_compile_definitions(SDL_app PRIVATE SCR_W8=240 SCR_H8=240)
 
 if (false) # disabled for now as it's incomplete
 # https://github.com/tcbrindle/sdl2-cmake-scripts

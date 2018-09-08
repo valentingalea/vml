@@ -4,10 +4,13 @@
 #include "ThreadPool/include/threadpool/parallel_for_each.h"
 #undef _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 
-#include "../shader/sandbox.h"
+// config #define's
+// SCR_W8
+// SCR_H8
+// DUMP_FPS
+// APP_??? (see sandbox.h)
 
-static constexpr int SCR_W8 = 240;
-static constexpr int SCR_H8 = 240;
+#include "../shader/sandbox.h"
 
  vec3 sandbox::iResolution	= vec3(SCR_W8, SCR_H8, 0); // viewport resolution (in pixels)
 float sandbox::iTime		= 0; // shader playback time (in seconds)
@@ -81,6 +84,15 @@ void SDL_app::run()
 		WorkItems.emplace_back(WorkDef{ i * slice, i * slice + slice  });
 	}
 
+	constexpr auto fmt = "curr: %3.2f; max: %3.2f; avrg: %3.2f;\r";
+	auto avrg_fps = 0.f;
+	auto max_fps = 0.f;
+	auto frame_num = 1;
+#ifdef DUMP_FPS
+	auto file_closer = [](FILE* f) { fclose(f); };
+	std::unique_ptr<FILE, decltype(file_closer)> file = { fopen("fps.txt", "wt+"), file_closer };
+#endif
+
 	while (running) {
 		auto time_frame = std::chrono::system_clock::now();
 
@@ -104,8 +116,15 @@ void SDL_app::run()
 		sandbox::iTime = elapsed_seconds.count();
 		sandbox::iTimeDelta = frame_seconds.count();
 
-	//	printf("%2.1f\r", 1.f / sandbox::iTimeDelta);
+		auto curr_fps = 1.f / sandbox::iTimeDelta;
+		max_fps = std::max(max_fps, curr_fps);
+		avrg_fps += (curr_fps - avrg_fps) / frame_num++; // https://en.wikipedia.org/wiki/Moving_average
+		printf(fmt, curr_fps, max_fps, avrg_fps);
 	}
+
+#ifdef DUMP_FPS
+	fprintf(file.get(), fmt, 0.f, max_fps, avrg_fps);
+#endif
 }
 
 struct Worker
