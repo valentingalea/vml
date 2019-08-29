@@ -388,12 +388,11 @@ struct model_t
 
     std::vector<VkBuffer> raw_cache_for_rendering;
 	
-    std::vector<VkVertexInputBindingDescription>
+    VkVertexInputBindingDescription *
     create_binding_descriptions(void)
     {
-        
-        std::vector<VkVertexInputBindingDescription> descriptions;
-        descriptions.resize(bindings.size());
+        // Doesn't matter for this small example
+        VkVertexInputBindingDescription *descriptions = new VkVertexInputBindingDescription[bindings.size()];
         for (uint32_t i = 0; i < bindings.size(); ++i)
         {
             descriptions[i].binding = bindings[i].binding;
@@ -406,12 +405,12 @@ struct model_t
     void
     create_vertex_input_state_info(VkPipelineVertexInputStateCreateInfo *info)
     {
-        std::vector<VkVertexInputBindingDescription> binding_descriptions = create_binding_descriptions();
+        VkVertexInputBindingDescription *binding_descriptions = create_binding_descriptions();
 
         info->sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	
-        info->vertexBindingDescriptionCount = binding_descriptions.size();
-        info->pVertexBindingDescriptions = binding_descriptions.data();
+        info->vertexBindingDescriptionCount = bindings.size();
+        info->pVertexBindingDescriptions = binding_descriptions;
         info->vertexAttributeDescriptionCount = attributes.size();
         info->pVertexAttributeDescriptions = attributes.data();
     }
@@ -428,20 +427,134 @@ struct model_t
     }
 };
 
+struct mapped_gpu_memory_t
+{
+    uint32_t offset;
+    VkDeviceSize size;
+    VkDeviceMemory *memory;
+    void *data;
+
+    void begin(void);
+
+    void fill(void *data, uint32_t size);
+
+    void flush(uint32_t offset, uint32_t size);
+	
+    void end(void);
+};
+
+struct gpu_buffer_t
+{
+    VkBuffer buffer;
+    VkDeviceSize size;
+    VkDeviceMemory memory;
+
+    inline mapped_gpu_memory_t construct_map(void)
+    {
+        return(mapped_gpu_memory_t{0, size, &memory});
+    }
+};
+
+void initialize_gpu_buffer(gpu_buffer_t *buffer, uint32_t size, void *data, VkBufferUsageFlags usage, VkCommandPool *pool);
+
+VkDescriptorSetLayoutBinding initialize_descriptor_layout_binding_s(uint32_t count,
+                                                                    uint32_t binding,
+                                                                    VkDescriptorType uniform_type,
+                                                                    VkShaderStageFlags shader_flags);
+
+struct descriptor_layout_info_t // --> VkDescriptorSetLayout
+{
+    static constexpr uint32_t MAX_BINDINGS = 15;
+    VkDescriptorSetLayoutBinding bindings_buffer[MAX_BINDINGS] = {};
+    uint32_t binding_count = 0;
+    
+    void push(const VkDescriptorSetLayoutBinding &binding_info);
+
+    void push(uint32_t count,
+              uint32_t binding,
+              VkDescriptorType uniform_type,
+              VkShaderStageFlags shader_flags);
+};
+
+VkDescriptorSetLayout
+initialize_descriptor_set_layout(descriptor_layout_info_t *blueprint);
+
+/*uniform_group_t
+make_uniform_group(uniform_layout_t *layout, VkDescriptorPool *pool);
+
+enum binding_type_t { BUFFER, INPUT_ATTACHMENT, TEXTURE };
+struct update_binding_t
+{
+    binding_type_t type;
+    void *object;
+    uint32_t binding;
+    uint32_t t_changing_data = 0; // Offset into the buffer or image layout
+    // Stuff that can change optionally
+    uint32_t count = 1;
+    uint32_t dst_element = 0;
+};
+
+// Template function, need to define here
+template <typename ...Update_Ts> void
+update_uniform_group(uniform_group_t *group, const Update_Ts &...updates)
+{
+    update_binding_t bindings[] = { updates... };
+
+    uint32_t image_info_count = 0;
+    VkDescriptorImageInfo image_info_buffer[20] = {};
+    uint32_t buffer_info_count = 0;
+    VkDescriptorBufferInfo buffer_info_buffer[20] = {};
+
+    VkWriteDescriptorSet writes[sizeof...(updates)] = {};
+    
+    for (uint32_t i = 0; i < sizeof...(updates); ++i)
+    {
+        switch (bindings[i].type)
+        {
+        case binding_type_t::BUFFER:
+            {
+                gpu_buffer_t *ubo = (gpu_buffer_t *)bindings[i].object;
+                buffer_info_buffer[buffer_info_count] = ubo->make_descriptor_info(bindings[i].t_changing_data);
+                init_buffer_descriptor_set_write(group, bindings[i].binding, bindings[i].dst_element, bindings[i].count, &buffer_info_buffer[buffer_info_count], &writes[i]);
+                ++buffer_info_count;
+                break;
+            }
+        case binding_type_t::TEXTURE:
+            {
+                image2d_t *tx = (image2d_t *)bindings[i].object;
+                image_info_buffer[image_info_count] = tx->make_descriptor_info((VkImageLayout)bindings[i].t_changing_data);
+                init_image_descriptor_set_write(group, bindings[i].binding, bindings[i].dst_element, bindings[i].count, &image_info_buffer[image_info_count], &writes[i]);
+                ++image_info_count;
+                break;
+            }
+        case binding_type_t::INPUT_ATTACHMENT:
+            {
+                image2d_t *tx = (image2d_t *)bindings[i].object;
+                image_info_buffer[image_info_count] = tx->make_descriptor_info((VkImageLayout)bindings[i].t_changing_data);
+                init_input_attachment_descriptor_set_write(group, bindings[i].binding, bindings[i].dst_element, bindings[i].count, &image_info_buffer[image_info_count], &writes[i]);
+                ++image_info_count;
+                break;
+            }
+        }
+    }
+
+    update_descriptor_sets({sizeof...(updates), writes});
+    }*/
+
 void initialize_graphics_pipeline(graphics_pipeline_t *ppln,
                                   const dynamic_states_t &dynamic,
                                   const shader_modules_t &modules,
                                   bool primitive_restart, VkPrimitiveTopology topology,
                                   VkPolygonMode polygonmode, VkCullModeFlags culling,
                                   std::vector<VkDescriptorSetLayout> &layouts,
+                                  VkRenderPass *compatible,
+                                  float depth_bias,
+                                  bool enable_depth,
+                                  uint32_t subpass,
                                   const shader_pk_data_t &pk,
                                   VkExtent2D viewport,
                                   const shader_blend_states_t &blends,
-                                  model_t *model,
-                                  bool enable_depth,
-                                  float depth_bias,
-                                  VkRenderPass *compatible,
-                                  uint32_t subpass);
+                                  model_t *model);
 
 void initialize_image_view(VkFormat format, VkImageAspectFlags aspect_flags, VkImageViewType type, uint32_t layers, VkImage *image, VkImageView *view);
 void initialize_command_pool(uint32_t family_index, VkCommandPoolCreateFlags flags, VkCommandPool *command_pool);
@@ -453,6 +566,7 @@ struct swapchain_information_t
     VkFormat supported_depth_format;
     VkExtent2D swapchain_extent;
     const std::vector<VkImageView> &image_views;
+    VkCommandPool *pool;
 };
 swapchain_information_t initialize_graphics_context(window_data_t &window);
 

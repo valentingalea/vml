@@ -1,6 +1,7 @@
 #define GLFW_INCLUDE_VULKAN
 #define VML_API_IN_USE VML_API_VULKAN
 
+#include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
 #include <chrono>
 #include <cassert>
@@ -27,7 +28,12 @@ static struct renderer_t
     std::vector<framebuffer_t> composition_framebuffers;
     VkRenderPass composition_render_pass;
 
-    VkPipeline lp_no_tex_pipeline;
+    gpu_buffer_t cube_vertices;
+    gpu_buffer_t cube_indices;    
+    model_t cube_model;
+    graphics_pipeline_t lp_no_tex_pipeline;
+    VkDescriptorSetLayout gbuffer_layout;
+    graphics_pipeline_t composition_pipeline;
 } g_renderer;
 
 void tick(const window_data_t &window, float dt)
@@ -56,6 +62,7 @@ void tick(const window_data_t &window, float dt)
 
 void initialize_deferred_render_pass(const window_data_t &window, const swapchain_information_t &swapchain);
 void initialize_deferred_framebuffer(const window_data_t &window, const swapchain_information_t &swapchain);
+void initialize_cube_data(VkCommandPool *pool);
 void initialize_deferred_graphics_pipelines(const window_data_t &window, const swapchain_information_t &swapchain);
 
 void initialize_scene(const window_data_t &window, const swapchain_information_t &swapchain)
@@ -64,7 +71,9 @@ void initialize_scene(const window_data_t &window, const swapchain_information_t
 
     initialize_deferred_framebuffer(window, swapchain);
 
+    initialize_cube_data(swapchain.pool);
     
+    initialize_deferred_graphics_pipelines(window, swapchain);
 }
 
 int32_t main(int32_t argc, char *argv[])
@@ -145,7 +154,95 @@ void initialize_deferred_framebuffer(const window_data_t &window, const swapchai
     }
 }
 
+void initialize_cube_data(VkCommandPool *pool)
+{
+    g_renderer.cube_model.bindings.resize(1);
+    g_renderer.cube_model.attributes.resize(1);
+    model_binding_t *binding0 = &g_renderer.cube_model.bindings[0];
+    binding0->begin_attributes_creation(g_renderer.cube_model.attributes.data());
+    {
+        binding0->push_attribute(0, VK_FORMAT_R32G32B32_SFLOAT, sizeof(glm::vec3));
+    }
+    binding0->end_attributes_creation();
+    
+    float radius = 1.0f;
+    
+    struct cube_vertex_t { glm::vec3 pos; };
+    cube_vertex_t vertices[]
+    {
+        {{-radius, -radius, radius }},
+        {{radius, -radius, radius }},
+        {{radius, radius, radius }},
+        {{-radius, radius, radius }},
+        {{-radius, -radius, -radius }},
+        {{radius, -radius, -radius }},
+        {{radius, radius, -radius }},
+        {{-radius, radius, -radius }},
+    };
+
+    initialize_gpu_buffer(&g_renderer.cube_vertices, sizeof(vertices), vertices, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, pool);
+
+    binding0->buffer = g_renderer.cube_vertices.buffer;
+    g_renderer.cube_model.create_vbo_list();
+
+    uint32_t mesh_indices[]
+    {
+        0, 1, 2,
+        2, 3, 0,
+        1, 5, 6,
+        6, 2, 1,
+        7, 6, 5,
+        5, 4, 7,
+        3, 7, 4,
+        4, 0, 3,
+        4, 5, 1,
+        1, 0, 4,
+        3, 2, 6,
+        6, 7, 3,
+    };
+
+    g_renderer.cube_model.index_data.index_type = VK_INDEX_TYPE_UINT32;
+    g_renderer.cube_model.index_data.index_offset = 0;
+    g_renderer.cube_model.index_data.index_count = sizeof(mesh_indices) / sizeof(mesh_indices[0]);
+
+    initialize_gpu_buffer(&g_renderer.cube_indices, sizeof(mesh_indices), mesh_indices, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, pool);
+
+    g_renderer.cube_model.index_data.index_buffer = g_renderer.cube_indices.buffer;
+}
+
 void initialize_deferred_graphics_pipelines(const window_data_t &window, const swapchain_information_t &swapchain)
 {
-    
+    {
+        VkRenderPass &dfr_render_pass = g_renderer.composition_render_pass;
+        shader_modules_t modules(shader_module_info_t{"shaders/SPV/lp_no_tex_cube.vert.spv", VK_SHADER_STAGE_VERTEX_BIT},
+                                 shader_module_info_t{"shaders/SPV/lp_no_tex_cube.geom.spv", VK_SHADER_STAGE_GEOMETRY_BIT},
+                                 shader_module_info_t{"shaders/SPV/lp_no_tex_cube.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT});
+        shader_uniform_layouts_t layouts;
+        shader_pk_data_t push_k = {160, 0, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT};
+        shader_blend_states_t blending(false, false, false, false);
+        dynamic_states_t dynamic(VK_DYNAMIC_STATE_VIEWPORT);
+        initialize_graphics_pipeline(&g_renderer.lp_no_tex_pipeline, dynamic, modules, VK_FALSE, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+                                     VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, std::vector<VkDescriptorSetLayout>{}, &dfr_render_pass,
+                                     0.0f, true, 0, push_k, swapchain.swapchain_extent, blending, &g_renderer.cube_model);
+    }
+
+    {
+        descriptor_layout_info_t uniform_info = {};
+        uniform_info.push(1, 0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT);
+        uniform_info.push(1, 1, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT);
+        uniform_info.push(1, 2, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VK_SHADER_STAGE_FRAGMENT_BIT);
+        g_renderer.gbuffer_layout = initialize_descriptor_set_layout(&uniform_info);
+        
+        VkRenderPass &dfr_render_pass = g_renderer.composition_render_pass;
+        shader_modules_t modules(shader_module_info_t{"shaders/SPV/deferred_lighting.vert.spv", VK_SHADER_STAGE_VERTEX_BIT},
+                                 shader_module_info_t{"shaders/SPV/deferred_lighting.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT});
+        shader_uniform_layouts_t layouts (g_renderer.gbuffer_layout);
+        shader_pk_data_t push_k{ 160, 0, VK_SHADER_STAGE_FRAGMENT_BIT };
+        shader_blend_states_t blending(false);
+        dynamic_states_t dynamic(VK_DYNAMIC_STATE_VIEWPORT);
+        initialize_graphics_pipeline(&g_renderer.composition_pipeline, dynamic, modules, VK_FALSE, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+                                     VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, std::vector<VkDescriptorSetLayout>{g_renderer.gbuffer_layout}, &dfr_render_pass,
+                                     0.0f, false, 1, push_k, swapchain.swapchain_extent, blending, nullptr);
+    }
 }
+

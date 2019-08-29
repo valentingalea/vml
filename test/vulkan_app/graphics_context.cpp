@@ -494,6 +494,125 @@ inline void init_pipeline_layout(std::vector<VkDescriptorSetLayout> &layouts,
     }
 }
 
+void mapped_gpu_memory_t::begin(void)
+{
+    vkMapMemory(g_context.gpu.logical_device, *memory, offset, size, 0, &data);
+}
+
+void mapped_gpu_memory_t::fill(void *ptr, uint32_t size)
+{
+    memcpy(data, ptr, size);
+}
+
+void mapped_gpu_memory_t::flush(uint32_t offset, uint32_t size)
+{
+    VkMappedMemoryRange range = {};
+    range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+    range.memory = *memory;
+    range.offset = offset;
+    range.size = size;
+    vkFlushMappedMemoryRanges(g_context.gpu.logical_device, 1, &range);
+}
+
+void mapped_gpu_memory_t::end(void)
+{
+    vkUnmapMemory(g_context.gpu.logical_device, *memory);
+}
+
+void initialize_command_buffer(VkCommandPool *command_pool_source, VkCommandBufferLevel level, VkCommandBuffer *command_buffer);
+void begin_command_buffer(VkCommandBuffer *command_buffer, VkCommandBufferUsageFlags usage_flags, VkCommandBufferInheritanceInfo *inheritance);
+void end_command_buffer(VkCommandBuffer *command_buffer);
+void submit(VkCommandBuffer *command_buffer,
+            VkSemaphore *wait_semaphore,
+            VkSemaphore *signal_semaphore,
+            VkPipelineStageFlags *wait_stage,
+            VkFence *fence,
+            VkQueue *queue);
+
+void initialize_gpu_buffer(gpu_buffer_t *buffer, uint32_t size, void *data, VkBufferUsageFlags usage, VkCommandPool *pool)
+{
+    VkDeviceSize buffer_size = size;
+	
+    gpu_buffer_t staging_buffer;
+    staging_buffer.size = buffer_size;
+
+    VkBufferCreateInfo buffer_info	= {};
+    buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buffer_info.size = staging_buffer.size;
+    buffer_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    buffer_info.flags = 0;
+
+    if (vkCreateBuffer(g_context.gpu.logical_device, &buffer_info, nullptr, &staging_buffer.buffer) != VK_SUCCESS)
+    {
+        vulkan_error("Failed to initialize gpu buffer");
+        assert(0);
+    }
+
+    VkMemoryRequirements mem_requirements;
+    vkGetBufferMemoryRequirements(g_context.gpu.logical_device, staging_buffer.buffer, &mem_requirements);
+
+    allocate_gpu_memory(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, mem_requirements, &staging_buffer.memory);
+	
+    vkBindBufferMemory(g_context.gpu.logical_device, staging_buffer.buffer, staging_buffer.memory, 0);
+    
+    mapped_gpu_memory_t mapped_memory = staging_buffer.construct_map();
+    mapped_memory.begin();
+    mapped_memory.fill(data, size);
+    mapped_memory.end();
+
+    buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buffer_info.size = size;
+    buffer_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | usage;
+    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    buffer_info.flags = 0;
+
+    if (vkCreateBuffer(g_context.gpu.logical_device, &buffer_info, nullptr, &buffer->buffer) != VK_SUCCESS)
+    {
+        vulkan_error("Failed to initialize gpu buffer");
+        assert(0);
+    }
+
+    vkGetBufferMemoryRequirements(g_context.gpu.logical_device, buffer->buffer, &mem_requirements);
+
+    allocate_gpu_memory(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mem_requirements, &buffer->memory);
+	
+    vkBindBufferMemory(g_context.gpu.logical_device, buffer->buffer, buffer->memory, 0);
+    
+    VkCommandBuffer command_buffer;
+    initialize_command_buffer(pool,
+                              VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+                              &command_buffer);
+
+    begin_command_buffer(&command_buffer,
+                         VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+                         nullptr);
+
+    VkBufferCopy region = {};
+    region.size = staging_buffer.size;
+    vkCmdCopyBuffer(command_buffer,
+                    staging_buffer.buffer,
+                    buffer->buffer,
+                    1,
+                    &region);
+
+    //destroy_single_use_command_buffer(&command_buffer, command_pool);
+    end_command_buffer(&command_buffer);
+
+    VkFence null_fence = VK_NULL_HANDLE;
+    submit(&command_buffer,
+           nullptr,
+           nullptr,
+           nullptr,
+           &null_fence,
+           &g_context.gpu.graphics_queue);
+
+    vkQueueWaitIdle(g_context.gpu.graphics_queue);
+
+    vkDestroyBuffer(g_context.gpu.logical_device, staging_buffer.buffer, nullptr);
+    vkFreeMemory(g_context.gpu.logical_device, staging_buffer.memory, nullptr);
+}
+
 void initialize_graphics_pipeline(graphics_pipeline_t *ppln,
                                   const dynamic_states_t &dynamic,
                                   const shader_modules_t &modules,
@@ -635,6 +754,46 @@ void initialize_graphics_pipeline(graphics_pipeline_t *ppln,
     {
         vkDestroyShaderModule(g_context.gpu.logical_device, module_objects[i], nullptr);
     }    
+}
+
+VkDescriptorSetLayoutBinding initialize_descriptor_layout_binding_s(uint32_t count,
+                                                                    uint32_t binding,
+                                                                    VkDescriptorType type,
+                                                                    VkShaderStageFlags stage)
+{
+    VkDescriptorSetLayoutBinding ubo_binding = {};
+    ubo_binding.binding = binding;
+    ubo_binding.descriptorType = type;
+    ubo_binding.descriptorCount	= count;
+    ubo_binding.stageFlags = stage;
+    ubo_binding.pImmutableSamplers = nullptr;
+    return(ubo_binding);
+}
+
+void descriptor_layout_info_t::push(uint32_t count,
+                                    uint32_t binding,
+                                    VkDescriptorType uniform_type,
+                                    VkShaderStageFlags shader_flags)
+{
+    bindings_buffer[binding_count++] = initialize_descriptor_layout_binding_s(count, binding, uniform_type, shader_flags);
+}
+
+VkDescriptorSetLayout initialize_descriptor_set_layout(descriptor_layout_info_t *blueprint)
+{
+    VkDescriptorSetLayout layout;
+    
+    VkDescriptorSetLayoutCreateInfo layout_info	= {};
+    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layout_info.bindingCount = blueprint->binding_count;
+    layout_info.pBindings = blueprint->bindings_buffer;
+	
+    if (vkCreateDescriptorSetLayout(g_context.gpu.logical_device, &layout_info, nullptr, &layout) != VK_SUCCESS)
+    {
+        vulkan_error("Failed to initialize descriptor set layout");
+        assert(0);
+    }
+
+    return layout;
 }
 
 std::vector<const char *> initialize_vulkan_instance(void)
@@ -1261,11 +1420,11 @@ void submit(VkCommandBuffer *command_buffer,
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = command_buffer;
 
-    submit_info.waitSemaphoreCount = 1;
+    submit_info.waitSemaphoreCount = (wait_semaphore ? 1 : 0);
     submit_info.pWaitSemaphores = wait_semaphore;
     submit_info.pWaitDstStageMask = wait_stage;
 
-    submit_info.signalSemaphoreCount = 1;
+    submit_info.signalSemaphoreCount = (signal_semaphore ? 1 : 0);
     submit_info.pSignalSemaphores = signal_semaphore;
 
     vkQueueSubmit(*queue, 1, &submit_info, *fence);
@@ -1349,5 +1508,5 @@ swapchain_information_t initialize_graphics_context(window_data_t &window)
     initialize_fence(VK_FENCE_CREATE_SIGNALED_BIT, &g_context.cpu_wait);
     initialize_command_buffer(&g_context.command_pool_reset, VK_COMMAND_BUFFER_LEVEL_PRIMARY, &g_context.primary_command_buffer);
 
-    return swapchain_information_t{ g_context.swapchain.format, g_context.gpu.supported_depth_format, g_context.swapchain.extent, g_context.swapchain.views };
+    return swapchain_information_t{ g_context.swapchain.format, g_context.gpu.supported_depth_format, g_context.swapchain.extent, g_context.swapchain.views, &g_context.command_pool_reset };
 }
