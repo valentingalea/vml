@@ -68,6 +68,8 @@ struct vulkan_context_t
     VkCommandBuffer primary_command_buffer;
 
     uint32_t current_image_index;
+
+    VkDescriptorPool descriptor_pool;
 };
 
 struct render_pass_attachment_t
@@ -157,6 +159,16 @@ struct framebuffer_attachment_t
     VkImage image;
     VkImageView view;
     VkDeviceMemory memory;
+
+    inline VkDescriptorImageInfo
+    make_descriptor_info(VkImageLayout expected_layout)
+    {
+        VkDescriptorImageInfo info = {};
+        info.imageLayout = expected_layout;
+        info.imageView = view;
+        info.sampler = /* null for this example */ VK_NULL_HANDLE;
+        return(info);
+    }
 };
 
 struct framebuffer_t
@@ -476,11 +488,8 @@ struct descriptor_layout_info_t // --> VkDescriptorSetLayout
               VkShaderStageFlags shader_flags);
 };
 
-VkDescriptorSetLayout
-initialize_descriptor_set_layout(descriptor_layout_info_t *blueprint);
-
-/*uniform_group_t
-make_uniform_group(uniform_layout_t *layout, VkDescriptorPool *pool);
+VkDescriptorSetLayout initialize_descriptor_set_layout(descriptor_layout_info_t *blueprint);
+VkDescriptorSet initialize_descriptor_set(VkDescriptorSetLayout *layout);
 
 enum binding_type_t { BUFFER, INPUT_ATTACHMENT, TEXTURE };
 struct update_binding_t
@@ -494,9 +503,28 @@ struct update_binding_t
     uint32_t dst_element = 0;
 };
 
+inline void
+init_input_attachment_descriptor_set_write(VkDescriptorSet *set,
+                                           uint32_t binding,
+                                           uint32_t dst_array_element,
+                                           uint32_t count,
+                                           VkDescriptorImageInfo *infos,
+                                           VkWriteDescriptorSet *write)
+{
+    write->sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write->dstSet = *set;
+    write->dstBinding = binding;
+    write->dstArrayElement = dst_array_element;
+    write->descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+    write->descriptorCount = count;
+    write->pImageInfo = infos;
+}
+
+void update_descriptor_sets(VkWriteDescriptorSet *writes, uint32_t count);
+
 // Template function, need to define here
 template <typename ...Update_Ts> void
-update_uniform_group(uniform_group_t *group, const Update_Ts &...updates)
+update_descriptor_set(VkDescriptorSet *set, const Update_Ts &...updates)
 {
     update_binding_t bindings[] = { updates... };
 
@@ -511,35 +539,20 @@ update_uniform_group(uniform_group_t *group, const Update_Ts &...updates)
     {
         switch (bindings[i].type)
         {
-        case binding_type_t::BUFFER:
-            {
-                gpu_buffer_t *ubo = (gpu_buffer_t *)bindings[i].object;
-                buffer_info_buffer[buffer_info_count] = ubo->make_descriptor_info(bindings[i].t_changing_data);
-                init_buffer_descriptor_set_write(group, bindings[i].binding, bindings[i].dst_element, bindings[i].count, &buffer_info_buffer[buffer_info_count], &writes[i]);
-                ++buffer_info_count;
-                break;
-            }
-        case binding_type_t::TEXTURE:
-            {
-                image2d_t *tx = (image2d_t *)bindings[i].object;
-                image_info_buffer[image_info_count] = tx->make_descriptor_info((VkImageLayout)bindings[i].t_changing_data);
-                init_image_descriptor_set_write(group, bindings[i].binding, bindings[i].dst_element, bindings[i].count, &image_info_buffer[image_info_count], &writes[i]);
-                ++image_info_count;
-                break;
-            }
+            // Only one that we need for now
         case binding_type_t::INPUT_ATTACHMENT:
             {
-                image2d_t *tx = (image2d_t *)bindings[i].object;
+                framebuffer_attachment_t *tx = (framebuffer_attachment_t *)bindings[i].object;
                 image_info_buffer[image_info_count] = tx->make_descriptor_info((VkImageLayout)bindings[i].t_changing_data);
-                init_input_attachment_descriptor_set_write(group, bindings[i].binding, bindings[i].dst_element, bindings[i].count, &image_info_buffer[image_info_count], &writes[i]);
+                init_input_attachment_descriptor_set_write(set, bindings[i].binding, bindings[i].dst_element, bindings[i].count, &image_info_buffer[image_info_count], &writes[i]);
                 ++image_info_count;
                 break;
             }
         }
     }
 
-    update_descriptor_sets({sizeof...(updates), writes});
-    }*/
+    update_descriptor_sets(writes, sizeof...(updates));
+}
 
 void initialize_graphics_pipeline(graphics_pipeline_t *ppln,
                                   const dynamic_states_t &dynamic,

@@ -2,6 +2,7 @@
 #define VML_API_IN_USE VML_API_VULKAN
 
 #include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 #include <GLFW/glfw3.h>
 #include <chrono>
 #include <cassert>
@@ -29,10 +30,14 @@ static struct renderer_t
     VkRenderPass composition_render_pass;
 
     gpu_buffer_t cube_vertices;
-    gpu_buffer_t cube_indices;    
+    gpu_buffer_t cube_indices;
+    uint32_t index_count;
+
     model_t cube_model;
     graphics_pipeline_t lp_no_tex_pipeline;
+    
     VkDescriptorSetLayout gbuffer_layout;
+    VkDescriptorSet gbuffer_set;
     graphics_pipeline_t composition_pipeline;
 } g_renderer;
 
@@ -41,15 +46,59 @@ void tick(const window_data_t &window, float dt)
     frame_rendering_data_t frame = begin_frame_rendering();
     {
         // Do rendering
-        begin_render_pass(frame.command_buffer,
-                          g_renderer.composition_render_pass, g_renderer.composition_framebuffers[frame.frame_index], VK_SUBPASS_CONTENTS_INLINE,
-                          make_clear_color_color(0, 0.4, 0.7, 0),
-                          make_clear_color_color(0, 0.4, 0.7, 0),
-                          make_clear_color_color(0, 0.4, 0.7, 0),
-                          make_clear_color_color(0, 0.4, 0.7, 0),
+        framebuffer_t *dst_framebuffer = &g_renderer.composition_framebuffers[frame.frame_index];
+        begin_render_pass(frame.command_buffer, 
+                          g_renderer.composition_render_pass, *dst_framebuffer, VK_SUBPASS_CONTENTS_INLINE,
+                          make_clear_color_color(0.2, 0.2, 0.2, 1.0f),
+                          make_clear_color_color(0.2, 0.2, 0.2, 1.0f),
+                          make_clear_color_color(0.2, 0.2, 0.2, 1.0f),
+                          make_clear_color_color(0.2, 0.2, 0.2, 1.0f),
                           make_clear_color_depth(1.0f, 0));
         {
             // Do world rendering
+            vkCmdBindPipeline(frame.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_renderer.lp_no_tex_pipeline.pipeline);
+
+            vkCmdBindDescriptorSets(frame.command_buffer,
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    g_renderer.lp_no_tex_pipeline.layout,
+                                    0,
+                                    1,
+                                    &g_renderer.gbuffer_set,
+                                    0,
+                                    nullptr);
+
+            VkDeviceSize zero = 0;
+            vkCmdBindVertexBuffers(frame.command_buffer,0, 1, &g_renderer.cube_vertices.buffer, &zero);
+
+            vkCmdBindIndexBuffer(frame.command_buffer, g_renderer.cube_indices.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+            struct push_constant_t
+            {
+                glm::mat4 model_view;
+                glm::mat4 projection;
+                glm::vec4 color;
+                float roughness;
+                float metalness;                
+            } push_constant;
+
+            glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)dst_framebuffer->extent.width / (float)dst_framebuffer->extent.height,
+                                                    0.1f, 100.0f);
+            glm::mat4 view = glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0001f, 0.0001f, -1.0f), glm::vec3(0.0, 1.0f, 0.0f));
+
+            push_constant.model_view = view;
+            push_constant.projection = projection;
+            push_constant.color = glm::vec4(118.0f / 255.0f, 169.0f / 255.0f, 72.0f / 255.0f, 1.0f);
+            push_constant.roughness = 0.5f;
+            push_constant.metalness = 0.5f;
+            
+            vkCmdPushConstants(frame.command_buffer,
+                               g_renderer.lp_no_tex_pipeline.layout,
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                               0,
+                               sizeof(push_constant_t),
+                               &push_constant);
+
+            vkCmdDrawIndexed(frame.command_buffer, g_renderer.cube_model.index_data.index_count, 1, 0, 0, 0);
         }
         next_subpass(frame.command_buffer, VK_SUBPASS_CONTENTS_INLINE);
         {
@@ -244,5 +293,16 @@ void initialize_deferred_graphics_pipelines(const window_data_t &window, const s
                                      VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, std::vector<VkDescriptorSetLayout>{g_renderer.gbuffer_layout}, &dfr_render_pass,
                                      0.0f, false, 1, push_k, swapchain.swapchain_extent, blending, nullptr);
     }
+
+    // Initialize descriptors
+    framebuffer_attachment_t *albedo_tx = &g_renderer.composition_framebuffers[0].color_attachments[1];
+    framebuffer_attachment_t *position_tx = &g_renderer.composition_framebuffers[0].color_attachments[2];
+    framebuffer_attachment_t *normal_tx = &g_renderer.composition_framebuffers[0].color_attachments[3];
+
+    g_renderer.gbuffer_set = initialize_descriptor_set(&g_renderer.gbuffer_layout);
+    update_descriptor_set(&g_renderer.gbuffer_set,
+                          update_binding_t{INPUT_ATTACHMENT, albedo_tx, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
+                          update_binding_t{INPUT_ATTACHMENT, position_tx, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL},
+                          update_binding_t{INPUT_ATTACHMENT, normal_tx, 2, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL});
 }
 

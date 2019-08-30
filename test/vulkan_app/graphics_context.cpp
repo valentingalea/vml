@@ -300,6 +300,7 @@ void initialize_framebuffer(std::vector<framebuffer_attachment_t> &color_attachm
     }
 
     framebuffer->extent = extent;
+    framebuffer->color_attachments = std::move(color_attachments);
 }
 
 inline void init_shader_pipeline_info(VkShaderModule *module,
@@ -794,6 +795,34 @@ VkDescriptorSetLayout initialize_descriptor_set_layout(descriptor_layout_info_t 
     }
 
     return layout;
+}
+
+VkDescriptorSet initialize_descriptor_set(VkDescriptorSetLayout *layout)
+{
+    VkDescriptorSet result;
+	
+    VkDescriptorSetAllocateInfo alloc_info	= {};
+    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    alloc_info.descriptorPool = g_context.descriptor_pool;
+    alloc_info.descriptorSetCount = 1;
+    alloc_info.pSetLayouts = layout;
+
+    if (vkAllocateDescriptorSets(g_context.gpu.logical_device, &alloc_info, &result) != VK_SUCCESS)
+    {
+        vulkan_error("Failed to initialize descriptor set");
+        assert(0);
+    }
+
+    return(result);
+}
+
+void update_descriptor_sets(VkWriteDescriptorSet *writes, uint32_t count)
+{
+    vkUpdateDescriptorSets(g_context.gpu.logical_device,
+                           count,
+                           writes,
+                           0,
+                           nullptr);
 }
 
 std::vector<const char *> initialize_vulkan_instance(void)
@@ -1494,6 +1523,37 @@ void end_frame_rendering_and_refresh(void)
             &g_context.gpu.present_queue);
 }
 
+void
+init_descriptor_pool_size(VkDescriptorType type,
+                          uint32_t count,
+                          VkDescriptorPoolSize *size)
+{
+    size->type = type;
+    size->descriptorCount = count;
+}
+
+void initialize_descriptor_pool(void)
+{
+    VkDescriptorPoolSize pool_sizes[3] = {};
+
+    init_descriptor_pool_size(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 20, &pool_sizes[0]);
+    init_descriptor_pool_size(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 20, &pool_sizes[1]);
+    init_descriptor_pool_size(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 20, &pool_sizes[2]);
+    
+    VkDescriptorPoolCreateInfo pool_info = {};
+    pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    pool_info.poolSizeCount = 3;
+    pool_info.pPoolSizes = pool_sizes;
+
+    pool_info.maxSets = 30;
+
+    if (vkCreateDescriptorPool(g_context.gpu.logical_device, &pool_info, nullptr, &g_context.descriptor_pool) != VK_SUCCESS)
+    {
+        vulkan_error("Failed to initialize descriptor pool");
+        assert(0);
+    }
+}
+
 swapchain_information_t initialize_graphics_context(window_data_t &window)
 {
     std::vector<const char *> validation_layers = initialize_vulkan_instance();
@@ -1507,6 +1567,7 @@ swapchain_information_t initialize_graphics_context(window_data_t &window)
     initialize_semaphore(&g_context.rendering_finished_semaphore);
     initialize_fence(VK_FENCE_CREATE_SIGNALED_BIT, &g_context.cpu_wait);
     initialize_command_buffer(&g_context.command_pool_reset, VK_COMMAND_BUFFER_LEVEL_PRIMARY, &g_context.primary_command_buffer);
+    initialize_descriptor_pool();
 
     return swapchain_information_t{ g_context.swapchain.format, g_context.gpu.supported_depth_format, g_context.swapchain.extent, g_context.swapchain.views, &g_context.command_pool_reset };
 }
