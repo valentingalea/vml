@@ -45,27 +45,25 @@ void tick(const window_data_t &window, float dt)
 {
     frame_rendering_data_t frame = begin_frame_rendering();
     {
+        glm::mat4 view = glm::lookAt(glm::vec3(3.0f), glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0, 1.0f, 0.0f));
+        
         // Do rendering
         framebuffer_t *dst_framebuffer = &g_renderer.composition_framebuffers[frame.frame_index];
         begin_render_pass(frame.command_buffer, 
                           g_renderer.composition_render_pass, *dst_framebuffer, VK_SUBPASS_CONTENTS_INLINE,
-                          make_clear_color_color(0.2, 0.2, 0.2, 1.0f),
-                          make_clear_color_color(0.2, 0.2, 0.2, 1.0f),
-                          make_clear_color_color(0.2, 0.2, 0.2, 1.0f),
-                          make_clear_color_color(0.2, 0.2, 0.2, 1.0f),
+                          make_clear_color_color(0.4, 0.4, 0.4, 1.0f),
+                          make_clear_color_color(0.4, 0.4, 0.4, 1.0f),
+                          make_clear_color_color(0.4, 0.4, 0.4, 1.0f),
+                          make_clear_color_color(0.4, 0.4, 0.4, 1.0f),
                           make_clear_color_depth(1.0f, 0));
         {
             // Do world rendering
+            
+            VkViewport viewport = {};
+            init_viewport(0, 0, dst_framebuffer->extent.width, dst_framebuffer->extent.height, 0.0f, 1.0f, &viewport);
+            vkCmdSetViewport(frame.command_buffer, 0, 1, &viewport);
+            
             vkCmdBindPipeline(frame.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_renderer.lp_no_tex_pipeline.pipeline);
-
-            vkCmdBindDescriptorSets(frame.command_buffer,
-                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                    g_renderer.lp_no_tex_pipeline.layout,
-                                    0,
-                                    1,
-                                    &g_renderer.gbuffer_set,
-                                    0,
-                                    nullptr);
 
             VkDeviceSize zero = 0;
             vkCmdBindVertexBuffers(frame.command_buffer,0, 1, &g_renderer.cube_vertices.buffer, &zero);
@@ -81,15 +79,14 @@ void tick(const window_data_t &window, float dt)
                 float metalness;                
             } push_constant;
 
-            glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)dst_framebuffer->extent.width / (float)dst_framebuffer->extent.height,
-                                                    0.1f, 100.0f);
-            glm::mat4 view = glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0001f, 0.0001f, -1.0f), glm::vec3(0.0, 1.0f, 0.0f));
+            glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)dst_framebuffer->extent.width / (float)dst_framebuffer->extent.height, 0.1f, 100.0f);
+            projection[1][1] *= -1.0f;
 
             push_constant.model_view = view;
             push_constant.projection = projection;
             push_constant.color = glm::vec4(118.0f / 255.0f, 169.0f / 255.0f, 72.0f / 255.0f, 1.0f);
-            push_constant.roughness = 0.5f;
-            push_constant.metalness = 0.5f;
+            push_constant.roughness = 0.2f;
+            push_constant.metalness = 0.8f;
             
             vkCmdPushConstants(frame.command_buffer,
                                g_renderer.lp_no_tex_pipeline.layout,
@@ -103,6 +100,43 @@ void tick(const window_data_t &window, float dt)
         next_subpass(frame.command_buffer, VK_SUBPASS_CONTENTS_INLINE);
         {
             // Do lighting
+
+            VkViewport viewport = {};
+            init_viewport(0, 0, dst_framebuffer->extent.width, dst_framebuffer->extent.height, 0.0f, 1.0f, &viewport);
+            vkCmdSetViewport(frame.command_buffer, 0, 1, &viewport);
+            
+            vkCmdBindPipeline(frame.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_renderer.composition_pipeline.pipeline);
+
+            vkCmdBindDescriptorSets(frame.command_buffer,
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    g_renderer.composition_pipeline.layout,
+                                    0,
+                                    1,
+                                    &g_renderer.gbuffer_set,
+                                    0,
+                                    nullptr);
+
+            struct lighting_push_constant_t
+            {
+                glm::vec4 light_direction;
+                glm::mat4 view_matrix;
+            } push_constant;
+
+            push_constant.light_direction = glm::vec4(glm::normalize(glm::vec3(1.0f, -1.0f, -0.2f)), 1.0f);
+            push_constant.view_matrix = view;
+
+            vkCmdPushConstants(frame.command_buffer,
+                               g_renderer.composition_pipeline.layout,
+                               VK_SHADER_STAGE_FRAGMENT_BIT,
+                               0,
+                               sizeof(push_constant),
+                               &push_constant);
+
+            vkCmdDraw(frame.command_buffer,
+                      4,
+                      1,
+                      0,
+                      0);
         }
         end_render_pass(frame.command_buffer);
     }
@@ -289,7 +323,7 @@ void initialize_deferred_graphics_pipelines(const window_data_t &window, const s
         shader_pk_data_t push_k{ 160, 0, VK_SHADER_STAGE_FRAGMENT_BIT };
         shader_blend_states_t blending(false);
         dynamic_states_t dynamic(VK_DYNAMIC_STATE_VIEWPORT);
-        initialize_graphics_pipeline(&g_renderer.composition_pipeline, dynamic, modules, VK_FALSE, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+        initialize_graphics_pipeline(&g_renderer.composition_pipeline, dynamic, modules, VK_FALSE, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
                                      VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, std::vector<VkDescriptorSetLayout>{g_renderer.gbuffer_layout}, &dfr_render_pass,
                                      0.0f, false, 1, push_k, swapchain.swapchain_extent, blending, nullptr);
     }

@@ -554,6 +554,16 @@ update_descriptor_set(VkDescriptorSet *set, const Update_Ts &...updates)
     update_descriptor_sets(writes, sizeof...(updates));
 }
 
+inline void init_viewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height, float min_depth, float max_depth, VkViewport *viewport)
+{
+    viewport->x = x;
+    viewport->y = y;
+    viewport->width = (float)width;
+    viewport->height = (float)height;
+    viewport->minDepth = min_depth;
+    viewport->maxDepth = max_depth;
+}
+
 void initialize_graphics_pipeline(graphics_pipeline_t *ppln,
                                   const dynamic_states_t &dynamic,
                                   const shader_modules_t &modules,

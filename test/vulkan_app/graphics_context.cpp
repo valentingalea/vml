@@ -336,21 +336,6 @@ inline void init_pipeline_input_assembly_info(VkPipelineInputAssemblyStateCreate
     info->primitiveRestartEnable = primitive_restart;
 }
 
-inline void init_viewport(uint32_t x, uint32_t y,
-                          uint32_t width,
-                          uint32_t height,
-                          float min_depth,
-                          float max_depth,
-                          VkViewport *viewport)
-{
-    viewport->x = x;
-    viewport->y = y;
-    viewport->width = (float)width;
-    viewport->height = (float)height;
-    viewport->minDepth = min_depth;
-    viewport->maxDepth = max_depth;
-}
-
 inline void init_rect2D(VkOffset2D offset,
                         VkExtent2D extent,
                         VkRect2D *rect)
