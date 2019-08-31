@@ -145,14 +145,14 @@ void initialize_render_pass(const std::vector<render_pass_attachment_t> &attachm
                                                              VK_IMAGE_LAYOUT_UNDEFINED,
                                                              attachments[att_i].final_layout);
     }
-    // Max is 5
+    // arbitrary max is 5
     VkSubpassDescription subpasses_vk[5] = {};
     uint32_t sub_i = 0;
     VkAttachmentReference reference_buffer[30] = {};
     uint32_t reference_count = 0;
     for (; sub_i < subpasses.size(); ++sub_i)
     {
-        // Max is 10
+        // arbitrary max is 10
         uint32_t ref_i = 0;
         uint32_t color_reference_start = reference_count;
         for (; ref_i < subpasses[sub_i].color_attachment_count; ++ref_i, ++reference_count)

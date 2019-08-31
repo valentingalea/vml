@@ -19,9 +19,11 @@
 #if defined (UNITY_BUILD)
 #include "window.cpp"
 #include "graphics_context.cpp"
+#include "frame_capture.cpp"
 #else
 #include "window.hpp"
 #include "graphics_context.hpp"
+#include "frame_capture.hpp"
 #endif
 
 static struct renderer_t

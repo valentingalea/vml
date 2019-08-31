@@ -159,6 +159,7 @@ struct framebuffer_attachment_t
     VkImage image;
     VkImageView view;
     VkDeviceMemory memory;
+    VkFormat format;
 
     inline VkDescriptorImageInfo
     make_descriptor_info(VkImageLayout expected_layout)
