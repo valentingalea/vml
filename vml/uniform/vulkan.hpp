@@ -47,6 +47,7 @@ namespace vml {
 
         void *mapped_data;
 
+        sampler2D(void) = default;
         sampler2D(const gpu_texture_object &original_image)
             : original_image(original_image), blitted_linear{original_image.format, original_image.w, original_image.h}
         {
@@ -69,7 +70,7 @@ namespace vml {
             image_info.arrayLayers = 1;
             image_info.format = blitted_linear.format;
             image_info.tiling = VK_IMAGE_TILING_LINEAR;
-            image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            image_info.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
             image_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
             image_info.samples = VK_SAMPLE_COUNT_1_BIT;
             // TODO: Possibly add the capability of concurrent sharing mode
@@ -93,22 +94,20 @@ namespace vml {
             vkGetPhysicalDeviceMemoryProperties(hardware,
                                                 &gpu_memory_properties);
 
-            int32_t memory_type = -1;
+            int32_t memory_type = 0;
+            bool success = 0;
                 
             for (; memory_type < gpu_memory_properties.memoryTypeCount; ++memory_type)
             {
                 if (memory_requirements.memoryTypeBits & (1 << memory_type)
                     && (gpu_memory_properties.memoryTypes[memory_type].propertyFlags & blitted_image_memory_property) == blitted_image_memory_property)
                 {
+                    success = 1;
                     break;
                 }
             }
-            if (memory_type == -1)
-            {
-                // Could not find memory type
-                // TODO: Handle this error
-                assert(false);
-            }
+            assert(success);
+            
             alloc_info.memoryTypeIndex = memory_type;
 
             vkAllocateMemory(gpu,
@@ -136,7 +135,7 @@ namespace vml {
 
         // Just copies the image into the linearly host visible image
         void
-        prepare(VkImageLayout layout_before_copy,
+        capture(VkImageLayout layout_before_copy,
                 VkCommandBuffer command_buffer,
                 VkDevice gpu)
         {
@@ -250,7 +249,11 @@ namespace vml {
                                  nullptr,
                                  1,
                                  &image_barrier);
+        }
 
+        void
+        begin(VkDevice gpu)
+        {
             // --- Start mapping the memory
             VkMemoryRequirements requirements = {};
             vkGetImageMemoryRequirements(gpu, blitted_linear.image, &requirements);
@@ -261,8 +264,13 @@ namespace vml {
                         0,
                         &mapped_data);
         }
+
+        void
+        end(VkDevice gpu)
+        {
+            vkUnmapMemory(gpu, blitted_linear.memory);
+        }
             
-        // The magic
         // UVS :
         //  (0,0)  --->  (1,0)
         //    |            |

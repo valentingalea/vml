@@ -41,6 +41,10 @@ static struct renderer_t
     VkDescriptorSetLayout gbuffer_layout;
     VkDescriptorSet gbuffer_set;
     graphics_pipeline_t composition_pipeline;
+
+
+    // --- Frame capture ---
+    frame_capture_t frame_capture;
 } g_renderer;
 
 void tick(const window_data_t &window, float dt)
@@ -142,13 +146,44 @@ void tick(const window_data_t &window, float dt)
         }
         end_render_pass(frame.command_buffer);
     }
+    
+    // Frame capture stuff
+    bool did_capture = window.mouse_buttons[GLFW_MOUSE_BUTTON_LEFT];
+
+    // Does preparations with command buffer
+    if (did_capture)
+    {
+        g_renderer.frame_capture.capture(frame.command_buffer, window.cursor_pos_x, window.cursor_pos_y);
+    }
+    
     end_frame_rendering_and_refresh();
+
+    // Does preparations after command buffer and steps into code
+    if (did_capture)
+    {
+        g_renderer.frame_capture.step_into_shader();
+    }
 }
 
 void initialize_deferred_render_pass(const window_data_t &window, const swapchain_information_t &swapchain);
 void initialize_deferred_framebuffer(const window_data_t &window, const swapchain_information_t &swapchain);
 void initialize_cube_data(VkCommandPool *pool);
 void initialize_deferred_graphics_pipelines(const window_data_t &window, const swapchain_information_t &swapchain);
+
+
+// --- Frame capture initailize ---
+void initialize_frame_capture(const window_data_t &window, const swapchain_information_t &swapchain)
+{
+    g_renderer.frame_capture.framebuffer = &g_renderer.composition_framebuffers[0];
+
+    // 1 = albedo, 2 = position, 3 = normal   (0 = swapchain image)
+    g_renderer.frame_capture.push_input_attachment(g_renderer.composition_framebuffers[0].color_attachments[1]);
+    g_renderer.frame_capture.push_input_attachment(g_renderer.composition_framebuffers[0].color_attachments[2]);
+    g_renderer.frame_capture.push_input_attachment(g_renderer.composition_framebuffers[0].color_attachments[3]);
+
+    g_renderer.frame_capture.initialize(swapchain.gpu->logical_device, swapchain.gpu->hardware, window.width, window.height);
+}
+
 
 void initialize_scene(const window_data_t &window, const swapchain_information_t &swapchain)
 {
@@ -159,6 +194,8 @@ void initialize_scene(const window_data_t &window, const swapchain_information_t
     initialize_cube_data(swapchain.pool);
     
     initialize_deferred_graphics_pipelines(window, swapchain);
+
+    initialize_frame_capture(window, swapchain);
 }
 
 int32_t main(int32_t argc, char *argv[])
@@ -231,9 +268,9 @@ void initialize_deferred_framebuffer(const window_data_t &window, const swapchai
         color_attachments.resize(4);
         // This will "initialize" the first attachment
         color_attachments[0].view = swapchain.image_views[i];
-        initialize_framebuffer_attachment(swapchain.swapchain_extent, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, &color_attachments[1]);
-        initialize_framebuffer_attachment(swapchain.swapchain_extent, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, &color_attachments[2]);
-        initialize_framebuffer_attachment(swapchain.swapchain_extent, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, &color_attachments[3]);
+        initialize_framebuffer_attachment(swapchain.swapchain_extent, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, &color_attachments[1]);
+        initialize_framebuffer_attachment(swapchain.swapchain_extent, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, &color_attachments[2]);
+        initialize_framebuffer_attachment(swapchain.swapchain_extent, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, &color_attachments[3]);
 
         initialize_framebuffer(color_attachments, depth_attachment, swapchain.swapchain_extent, g_renderer.composition_render_pass, current_fbo);
     }

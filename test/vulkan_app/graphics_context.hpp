@@ -591,6 +591,7 @@ struct swapchain_information_t
     VkExtent2D swapchain_extent;
     const std::vector<VkImageView> &image_views;
     VkCommandPool *pool;
+    gpu_t *gpu;
 };
 swapchain_information_t initialize_graphics_context(window_data_t &window);
 

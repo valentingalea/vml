@@ -215,6 +215,8 @@ void initialize_render_pass(const std::vector<render_pass_attachment_t> &attachm
 
 void initialize_framebuffer_attachment(const VkExtent2D &extent, VkFormat format, VkImageUsageFlags usage, framebuffer_attachment_t *attachment)
 {
+    attachment->format = format;
+    
     VkImageCreateInfo image_info = {};
     image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     image_info.imageType = VK_IMAGE_TYPE_2D;
@@ -1554,5 +1556,5 @@ swapchain_information_t initialize_graphics_context(window_data_t &window)
     initialize_command_buffer(&g_context.command_pool_reset, VK_COMMAND_BUFFER_LEVEL_PRIMARY, &g_context.primary_command_buffer);
     initialize_descriptor_pool();
 
-    return swapchain_information_t{ g_context.swapchain.format, g_context.gpu.supported_depth_format, g_context.swapchain.extent, g_context.swapchain.views, &g_context.command_pool_reset };
+    return swapchain_information_t{ g_context.swapchain.format, g_context.gpu.supported_depth_format, g_context.swapchain.extent, g_context.swapchain.views, &g_context.command_pool_reset, &g_context.gpu };
 }
