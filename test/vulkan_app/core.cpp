@@ -44,121 +44,127 @@ static struct renderer_t
 
 
     // --- Frame capture ---
-    frame_capture_t frame_capture;
+    debug_vulkan::frame_capture_t frame_capture;
 } g_renderer;
+
+void render(frame_rendering_data_t &frame)
+{
+    glm::mat4 view = glm::lookAt(glm::vec3(3.0f), glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0, 1.0f, 0.0f));
+        
+    // Do rendering
+    framebuffer_t *dst_framebuffer = &g_renderer.composition_framebuffers[frame.frame_index];
+    begin_render_pass(frame.command_buffer, 
+                      g_renderer.composition_render_pass, *dst_framebuffer, VK_SUBPASS_CONTENTS_INLINE,
+                      make_clear_color_color(0.4, 0.4, 0.4, 1.0f),
+                      make_clear_color_color(0.4, 0.4, 0.4, 1.0f),
+                      make_clear_color_color(0.4, 0.4, 0.4, 1.0f),
+                      make_clear_color_color(0.4, 0.4, 0.4, 1.0f),
+                      make_clear_color_depth(1.0f, 0));
+    {
+        // Do world rendering
+            
+        VkViewport viewport = {};
+        init_viewport(0, 0, dst_framebuffer->extent.width, dst_framebuffer->extent.height, 0.0f, 1.0f, &viewport);
+        vkCmdSetViewport(frame.command_buffer, 0, 1, &viewport);
+            
+        vkCmdBindPipeline(frame.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_renderer.lp_no_tex_pipeline.pipeline);
+
+        VkDeviceSize zero = 0;
+        vkCmdBindVertexBuffers(frame.command_buffer,0, 1, &g_renderer.cube_vertices.buffer, &zero);
+
+        vkCmdBindIndexBuffer(frame.command_buffer, g_renderer.cube_indices.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+        struct push_constant_t
+        {
+            glm::mat4 model_view;
+            glm::mat4 projection;
+            glm::vec4 color;
+            float roughness;
+            float metalness;                
+        } push_constant;
+
+        glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)dst_framebuffer->extent.width / (float)dst_framebuffer->extent.height, 0.1f, 100.0f);
+        projection[1][1] *= -1.0f;
+
+        push_constant.model_view = view;
+        push_constant.projection = projection;
+        push_constant.color = glm::vec4(118.0f / 255.0f, 169.0f / 255.0f, 72.0f / 255.0f, 1.0f);
+        push_constant.roughness = 0.2f;
+        push_constant.metalness = 0.8f;
+            
+        vkCmdPushConstants(frame.command_buffer,
+                           g_renderer.lp_no_tex_pipeline.layout,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                           0,
+                           sizeof(push_constant_t),
+                           &push_constant);
+
+        vkCmdDrawIndexed(frame.command_buffer, g_renderer.cube_model.index_data.index_count, 1, 0, 0, 0);
+    }
+    next_subpass(frame.command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+    {
+        // Do lighting
+
+        VkViewport viewport = {};
+        init_viewport(0, 0, dst_framebuffer->extent.width, dst_framebuffer->extent.height, 0.0f, 1.0f, &viewport);
+        vkCmdSetViewport(frame.command_buffer, 0, 1, &viewport);
+            
+        vkCmdBindPipeline(frame.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_renderer.composition_pipeline.pipeline);
+
+        vkCmdBindDescriptorSets(frame.command_buffer,
+                                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                g_renderer.composition_pipeline.layout,
+                                0,
+                                1,
+                                &g_renderer.gbuffer_set,
+                                0,
+                                nullptr);
+
+        struct lighting_push_constant_t
+        {
+            glm::vec4 light_direction;
+            glm::mat4 view_matrix;
+        } push_constant;
+
+        push_constant.light_direction = glm::vec4(glm::normalize(glm::vec3(1.0f, -1.0f, -0.2f)), 1.0f);
+        push_constant.view_matrix = view;
+
+        vkCmdPushConstants(frame.command_buffer,
+                           g_renderer.composition_pipeline.layout,
+                           VK_SHADER_STAGE_FRAGMENT_BIT,
+                           0,
+                           sizeof(push_constant),
+                           &push_constant);
+
+        vkCmdDraw(frame.command_buffer,
+                  4,
+                  1,
+                  0,
+                  0);
+    }
+    end_render_pass(frame.command_buffer);    
+}
 
 void tick(const window_data_t &window, float dt)
 {
+    bool did_capture = window.mouse_buttons[GLFW_MOUSE_BUTTON_LEFT];
+    
     frame_rendering_data_t frame = begin_frame_rendering();
     {
-        glm::mat4 view = glm::lookAt(glm::vec3(3.0f), glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0, 1.0f, 0.0f));
-        
-        // Do rendering
-        framebuffer_t *dst_framebuffer = &g_renderer.composition_framebuffers[frame.frame_index];
-        begin_render_pass(frame.command_buffer, 
-                          g_renderer.composition_render_pass, *dst_framebuffer, VK_SUBPASS_CONTENTS_INLINE,
-                          make_clear_color_color(0.4, 0.4, 0.4, 1.0f),
-                          make_clear_color_color(0.4, 0.4, 0.4, 1.0f),
-                          make_clear_color_color(0.4, 0.4, 0.4, 1.0f),
-                          make_clear_color_color(0.4, 0.4, 0.4, 1.0f),
-                          make_clear_color_depth(1.0f, 0));
+        render(frame);
+
+        // This function blits / copies all the images from the original VkImage object, to the mappable
+        // This needs to happen within the command buffer recording
+        // When command buffer recording is finished, we can map the images (because the command buffer will have been submitted and the memory will have been copied)
+        if (did_capture)
         {
-            // Do world rendering
-            
-            VkViewport viewport = {};
-            init_viewport(0, 0, dst_framebuffer->extent.width, dst_framebuffer->extent.height, 0.0f, 1.0f, &viewport);
-            vkCmdSetViewport(frame.command_buffer, 0, 1, &viewport);
-            
-            vkCmdBindPipeline(frame.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_renderer.lp_no_tex_pipeline.pipeline);
-
-            VkDeviceSize zero = 0;
-            vkCmdBindVertexBuffers(frame.command_buffer,0, 1, &g_renderer.cube_vertices.buffer, &zero);
-
-            vkCmdBindIndexBuffer(frame.command_buffer, g_renderer.cube_indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-
-            struct push_constant_t
-            {
-                glm::mat4 model_view;
-                glm::mat4 projection;
-                glm::vec4 color;
-                float roughness;
-                float metalness;                
-            } push_constant;
-
-            glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)dst_framebuffer->extent.width / (float)dst_framebuffer->extent.height, 0.1f, 100.0f);
-            projection[1][1] *= -1.0f;
-
-            push_constant.model_view = view;
-            push_constant.projection = projection;
-            push_constant.color = glm::vec4(118.0f / 255.0f, 169.0f / 255.0f, 72.0f / 255.0f, 1.0f);
-            push_constant.roughness = 0.2f;
-            push_constant.metalness = 0.8f;
-            
-            vkCmdPushConstants(frame.command_buffer,
-                               g_renderer.lp_no_tex_pipeline.layout,
-                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                               0,
-                               sizeof(push_constant_t),
-                               &push_constant);
-
-            vkCmdDrawIndexed(frame.command_buffer, g_renderer.cube_model.index_data.index_count, 1, 0, 0, 0);
+            g_renderer.frame_capture.capture(frame.command_buffer, window.cursor_pos_x, window.cursor_pos_y);
         }
-        next_subpass(frame.command_buffer, VK_SUBPASS_CONTENTS_INLINE);
-        {
-            // Do lighting
-
-            VkViewport viewport = {};
-            init_viewport(0, 0, dst_framebuffer->extent.width, dst_framebuffer->extent.height, 0.0f, 1.0f, &viewport);
-            vkCmdSetViewport(frame.command_buffer, 0, 1, &viewport);
-            
-            vkCmdBindPipeline(frame.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_renderer.composition_pipeline.pipeline);
-
-            vkCmdBindDescriptorSets(frame.command_buffer,
-                                    VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                    g_renderer.composition_pipeline.layout,
-                                    0,
-                                    1,
-                                    &g_renderer.gbuffer_set,
-                                    0,
-                                    nullptr);
-
-            struct lighting_push_constant_t
-            {
-                glm::vec4 light_direction;
-                glm::mat4 view_matrix;
-            } push_constant;
-
-            push_constant.light_direction = glm::vec4(glm::normalize(glm::vec3(1.0f, -1.0f, -0.2f)), 1.0f);
-            push_constant.view_matrix = view;
-
-            vkCmdPushConstants(frame.command_buffer,
-                               g_renderer.composition_pipeline.layout,
-                               VK_SHADER_STAGE_FRAGMENT_BIT,
-                               0,
-                               sizeof(push_constant),
-                               &push_constant);
-
-            vkCmdDraw(frame.command_buffer,
-                      4,
-                      1,
-                      0,
-                      0);
-        }
-        end_render_pass(frame.command_buffer);
-    }
-    
-    // Frame capture stuff
-    bool did_capture = window.mouse_buttons[GLFW_MOUSE_BUTTON_LEFT];
-
-    // Does preparations with command buffer
-    if (did_capture)
-    {
-        g_renderer.frame_capture.capture(frame.command_buffer, window.cursor_pos_x, window.cursor_pos_y);
     }
     
     end_frame_rendering_and_refresh();
 
-    // Does preparations after command buffer and steps into code
+    // Function first creates all the memory maps for the linear image-copies and steps into the shader
     if (did_capture)
     {
         g_renderer.frame_capture.step_into_shader();
@@ -171,16 +177,25 @@ void initialize_cube_data(VkCommandPool *pool);
 void initialize_deferred_graphics_pipelines(const window_data_t &window, const swapchain_information_t &swapchain);
 
 
-// --- Frame capture initailize ---
+// --- Frame capture initialize ---
 void initialize_frame_capture(const window_data_t &window, const swapchain_information_t &swapchain)
 {
+    // Set the framebuffer, so that debug_vulkan::frame_capture_t knows about the extent (width / height) of the attachments
     g_renderer.frame_capture.framebuffer = &g_renderer.composition_framebuffers[0];
 
-    // 1 = albedo, 2 = position, 3 = normal   (0 = swapchain image)
-    g_renderer.frame_capture.push_input_attachment(g_renderer.composition_framebuffers[0].color_attachments[1]);
-    g_renderer.frame_capture.push_input_attachment(g_renderer.composition_framebuffers[0].color_attachments[2]);
-    g_renderer.frame_capture.push_input_attachment(g_renderer.composition_framebuffers[0].color_attachments[3]);
+    // Set all the inputs of the frame capture
+    // These inputs (vml::sampler2D) will be used later to "sample" from the GPU textures that were allocated
+    // To emulate what would be happening on the GPU
+    // When it comes time to actually stepping into the GLSL code, the user should have mapped all the sampler2Ds / subpassInputs / etc... to the appropriate cpu-side input
+    {
+        // color attachment 1 = albedo, color attachment 2 = position, color attachment 3 = normal   (0 = swapchain image)
+        g_renderer.frame_capture.push_input_attachment(g_renderer.composition_framebuffers[0].color_attachments[1]);
+        g_renderer.frame_capture.push_input_attachment(g_renderer.composition_framebuffers[0].color_attachments[2]);
+        g_renderer.frame_capture.push_input_attachment(g_renderer.composition_framebuffers[0].color_attachments[3]);
+    }
 
+    // To capture the data of the attached image, vml::sampler2D will create a mappable copy of the image that lies in the GPU
+    // This function creates all the mappable Vulkan images and allocates the memory required
     g_renderer.frame_capture.initialize(swapchain.gpu->logical_device, swapchain.gpu->hardware, window.width, window.height);
 }
 

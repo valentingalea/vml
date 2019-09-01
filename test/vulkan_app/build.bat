@@ -8,8 +8,14 @@ set CFLAGS=-Zi /EHsc /std:c++latest /DEBUG:FULL
 
 set DEF=/DGLM_ENABLE_EXPERIMENTAL /DUNITY_BUILD /D_MBCS
 
-set GLFW_INC_DIR=/I C:/dependencies/glfw-3.2.1.bin.WIN64/include
-set GLM_INC_DIR=/I C:/dependencies/
+REM Create a dependencies directory and enter its path here
+REM In this directory you should download:
+REM    glfw from https://www.glfw.org/download.html
+REM    vulkan sdk from https://www.lunarg.com/vulkan-sdk/
+set DEPENDENCIES_DIR=C:/dependencies
+
+set GLFW_INC_DIR=/I %DEPENDENCIES_DIR%/glfw-3.2.1.bin.WIN64/include
+set GLM_INC_DIR=/I %DEPENDENCIES_DIR%/
 set VULKAN_INC_DIR=/I C:/VulkanSDK/1.1.108.0/Include
 set VML_INC_DIR=/I ../../
 
