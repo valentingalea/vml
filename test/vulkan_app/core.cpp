@@ -1,8 +1,8 @@
 #define GLFW_INCLUDE_VULKAN
 #define VML_API_IN_USE VML_API_VULKAN
 
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
+#include <glm.hpp>
+#include <gtx/transform.hpp>
 #include <GLFW/glfw3.h>
 #include <chrono>
 #include <cassert>

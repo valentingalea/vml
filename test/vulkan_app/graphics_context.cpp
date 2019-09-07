@@ -877,6 +877,7 @@ vulkan_debug_proc(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
                   void *user_data)
 {
     vulkan_error("Validation layer> ", message_data->pMessage);
+    
     return(VK_FALSE);
 }
 
