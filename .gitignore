@@ -1,2 +1,9 @@
-﻿/.vs
+﻿.vs
 /cmake/build
+*~
+*.obj
+*.dep
+*.exe
+*.pdb
+*.ilk
+*.sln
