@@ -1,3 +1,0 @@
-[submodule "test/SDL_app/ThreadPool"]
-	path = test/SDL_app/ThreadPool
-	url = https://github.com/RuedigerHelsch/ThreadPool.git
