@@ -73,6 +73,19 @@ float &			  iGlobalTime = iTime;	 // old name
 #else
 #include "ref/default.h"
 #endif
+
+// defined in def.h
+#undef _in
+#undef _inout
+#undef _out(T)
+#undef _begin
+#undef _end
+#undef _mutable
+#undef _constant
+#undef mul
+#undef PI
+#undef BIAS
+#undef max_dist
 /*****************************************************************************/
 
 #undef mainImage
