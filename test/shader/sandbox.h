@@ -77,7 +77,7 @@ float &			  iGlobalTime = iTime;	 // old name
 // defined in def.h
 #undef _in
 #undef _inout
-#undef _out(T)
+#undef _out
 #undef _begin
 #undef _end
 #undef _mutable
