@@ -1,15 +1,10 @@
 #include "../c4droid.h"
 
-#define  _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
-#include "ThreadPool/include/threadpool/parallel_for_each.h"
-#undef _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
-
 // config #define's
 // SCR_W8
 // SCR_H8
 // DUMP_FPS
 // APP_??? (see sandbox.h)
-
 #include "../shader/sandbox.h"
 
  vec3 sandbox::iResolution	= vec3(SCR_W8, SCR_H8, 0); // viewport resolution (in pixels)
@@ -18,10 +13,36 @@ float sandbox::iTimeDelta	= 0; // render time (in seconds)
  vec4 sandbox::iMouse;			 // mouse pixel coords. xy: current (if MLB down), zw: click
  vec4 sandbox::iDate;			 // (year, month, day, time in seconds)
 
-#include "SDL_app.h"
+#include <SDL.h>
+#undef main
+
 #include <cassert>
 #include <cstdio>
+#include <memory>
+#include <thread>
+#include <vector>
 #include <chrono>
+#include <atomic>
+
+ class SDL_app
+ {
+ public:
+	 SDL_app();
+	 ~SDL_app();
+	 void run();
+	 void draw();
+
+ private:
+	 bool IsAlive = false;
+
+	 SDL_Surface* Screen = nullptr;
+	 std::shared_ptr<SDL_Surface> OffScreen;
+
+	 std::vector<std::thread> WorkerThreads;
+
+	 void log();
+ };
+
 
 SDL_app::SDL_app()
 {
@@ -67,6 +88,56 @@ void SDL_app::log()
 	}
 }
 
+std::atomic_int WorkerCounter = -1;
+std::atomic_bool StartFrame = false;
+std::atomic_bool StopWork = false;
+
+struct WorkDef
+{
+	int height_start;
+	int height_end;
+};
+std::vector<WorkDef> WorkerDefs;
+
+void ThreadWorkerFunc(const WorkDef work, const SDL_Surface* bmp)
+{
+	bool sliceDone = false;
+	while (true) {
+		if (StartFrame && sliceDone) {
+			sliceDone = false;
+			continue;
+		}
+		if (WorkerCounter < 0 || !StartFrame || sliceDone) {
+			std::this_thread::yield();
+			continue;
+		}
+		if (StopWork) {
+			return;
+		}
+
+		sandbox::fragment_shader shader;
+		for (int y = work.height_start; y < work.height_end; ++y) {
+			uint8_t* ptr = reinterpret_cast<uint8_t*>(bmp->pixels) + y * bmp->pitch;
+			for (int x = 0; x < bmp->w; ++x) {
+				shader.gl_FragCoord = vec2(static_cast<float>(x), bmp->h - 1.0f - y);
+				shader.main(shader.gl_FragColor, shader.gl_FragCoord);
+				const auto color = sandbox::clamp(shader.gl_FragColor, 0.0f, 1.0f);
+
+				*ptr++ = static_cast<uint8_t>(255 * color.r + 0.5f);
+				*ptr++ = static_cast<uint8_t>(255 * color.g + 0.5f);
+				*ptr++ = static_cast<uint8_t>(255 * color.b + 0.5f);
+			}
+		}
+
+		WorkerCounter++;
+		sliceDone = true;
+
+		if (work.height_start == 0) {
+			return; // special case for main thread who needs to do other stuff
+		}
+	}
+}
+
 void SDL_app::run()
 {
 	assert(IsAlive);
@@ -74,15 +145,23 @@ void SDL_app::run()
 		return;
 	}
 
-	auto event = SDL_Event();
-	auto running = true;
-	auto time_start = std::chrono::system_clock::now();
-
 	const int count = std::thread::hardware_concurrency();
 	const int slice = SCR_H8 / count;
 	for (int i = 0; i < count; i++) {
-		WorkItems.emplace_back(WorkDef{ i * slice, i * slice + slice  });
+		WorkerDefs.push_back(WorkDef{i * slice, i * slice + slice});
 	}
+	for (int i = 1; i < count; i++) {
+		WorkerThreads.push_back(std::thread(
+			ThreadWorkerFunc,
+			WorkerDefs[i],
+			OffScreen.get()
+		));
+		WorkerThreads.back().detach();
+	}
+
+	auto event = SDL_Event();
+	auto running = true;
+	auto time_start = std::chrono::system_clock::now();
 
 	constexpr auto fmt = "curr: %3.2f; max: %3.2f; avrg: %3.2f;\r";
 	auto avrg_fps = 0.f;
@@ -125,46 +204,25 @@ void SDL_app::run()
 #ifdef DUMP_FPS
 	fprintf(file.get(), fmt, 0.f, max_fps, avrg_fps);
 #endif
+
+	StopWork = false; // signal to kill the worker threads
 }
-
-struct Worker
-{
-	sandbox::fragment_shader shader;
-	const SDL_app::WorkDef work;
-	const SDL_Surface * const bmp;
-
-	Worker(const SDL_app::WorkDef &work_, const SDL_Surface *bmp_) :
-		work(work_), bmp(bmp_)
-	{}
-
-	void operator()()
-	{
-		for (int y = work.height_start; y < work.height_end; ++y) {
-			uint8_t * ptr = reinterpret_cast<uint8_t*>(bmp->pixels) + y * bmp->pitch;
-			for (int x = 0; x < bmp->w; ++x) {
-				shader.gl_FragCoord = vec2(static_cast<float>(x), bmp->h - 1.0f - y);
-				shader.main(shader.gl_FragColor, shader.gl_FragCoord);
-				const auto color = sandbox::clamp(shader.gl_FragColor, 0.0f, 1.0f);
-
-				*ptr++ = static_cast<uint8_t>(255 * color.r + 0.5f);
-				*ptr++ = static_cast<uint8_t>(255 * color.g + 0.5f);
-				*ptr++ = static_cast<uint8_t>(255 * color.b + 0.5f);
-			}
-		}
-	}
-};
 
 void SDL_app::draw()
 {
-	const auto bmp = OffScreen.get();
+	WorkerCounter = 0; // (re)start all threads
+	StartFrame = true;
 
-	threadpool::parallel::for_each(
-		WorkItems.begin(), WorkItems.end(),
-		[bmp](auto &item) {
-			Worker(item, bmp)();
-	});
+	// do the first slice on this thread
+	ThreadWorkerFunc(WorkerDefs[0], OffScreen.get());
 
-	SDL_BlitSurface(bmp, NULL, Screen, NULL);
+	// wait for other threads to do their slices
+	while (WorkerCounter < WorkerThreads.size()) {
+		std::this_thread::yield();
+	}
+
+	StartFrame = false;
+	SDL_BlitSurface(OffScreen.get(), NULL, Screen, NULL);
 }
 
 int main()
