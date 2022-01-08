@@ -28,10 +28,12 @@ DEF_OP_UNARY_VECTOR(*=)
 #endif
 DEF_OP_UNARY_VECTOR(/=)
 
+#ifndef OMIT_NEG_OP
 self_type operator -() const
 {
 	return self_type((-data[Is])...);
 }
+#endif // !OMIT_NEG_OP
 
 //TODO: add  ==, !=
 

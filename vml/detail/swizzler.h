@@ -35,7 +35,18 @@ struct swizzler
 
 	//TODO: constrain the assignment only when indices are different
 
-	//TODO: impl unary ops
+	using self_type = swizzler;
+	using scalar_type = T;
+#define Is indices
+#define HAS_UNARY_MUL
+#define OMIT_NEG_OP
+#include "unary_ops.h"
+
+	vector_type operator -() const
+	{
+		return vector_type((-data[indices])...);
+	}
+#undef OMIT_NEG_OP
 
 private:
 	template<typename... Indices>
