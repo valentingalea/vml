@@ -62,6 +62,7 @@ struct matrix<scalar_type, vector_type, indices_pack<Columns...>, indices_pack<R
 	}
 
 	using self_type = matrix;
+	using other_type = self_type;
 #define Is Rows
 #include "detail/unary_ops.h"
 

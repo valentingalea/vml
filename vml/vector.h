@@ -84,6 +84,7 @@ struct _MSC_FIX_EBO vector :
 	}
 
 	using self_type = vector_type;
+	using other_type = self_type;
 #define Is Ns
 #define HAS_UNARY_MUL
 #include "detail/unary_ops.h"

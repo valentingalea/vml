@@ -36,6 +36,7 @@ struct swizzler
 	//TODO: constrain the assignment only when indices are different
 
 	using self_type = swizzler;
+	using other_type = vector_type;
 	using scalar_type = T;
 #define Is indices
 #define HAS_UNARY_MUL
