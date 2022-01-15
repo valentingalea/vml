@@ -44,7 +44,7 @@ struct vec_equiv<T, 4>
 template<typename T, size_t... Ns>
 struct vector_base_selector
 {
-	static_assert(sizeof...(Ns), "must have at least 1 component");
+	static_assert(sizeof...(Ns) >= 1, "must have at least 1 component");
 
 	template<size_t... indices> // 0 for x (or r), 1 for y (or g), etc 
 	struct swizzler_wrapper_factory
