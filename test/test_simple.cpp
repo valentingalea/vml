@@ -16,27 +16,11 @@ using  mat2 = vml::matrix<float, vml::vector, _01, _01>;
 using  mat3 = vml::matrix<float, vml::vector, _012, _012>;
 using  mat4 = vml::matrix<float, vml::vector, _0123, _0123>;
 
-
-
 int main ()
 {
-	using bvec3 = vml::vector<bool, 0, 1, 2>;
-	bvec3 b;
-	auto bb = any(b);
-
-	auto v = vec3(42.f);
-
-	float q = radians(3.14);
-
-	v *= 1.f;
-	v *= v.bbb;
-
-	dot(v.xx, v.zz);
-
-	auto mm = mat2(1, 2, 3, 4);
-	auto mmm = mat3(0, vec2(1, 2), vec2(3, 4), 5, v.xyx);
-	mmm * mmm;
-	mm *= 1.f;
+	vec4 a = vec4(1.f, 2.f, 3.f, 4.f);
+	vec4 b = a.wxyx * 2.f;
+	dot(a, b);
 
 	return 0;
 }
