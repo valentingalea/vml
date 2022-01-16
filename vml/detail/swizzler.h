@@ -32,22 +32,36 @@ struct swizzler
 		assign_across(vec, 0, indices...);
 		return *this;
 	}
-
 	//TODO: constrain the assignment only when indices are different
 
-	using self_type = swizzler;
-	using other_type = vector_type;
-	using scalar_type = T;
-#define Is indices
-#define HAS_UNARY_MUL
-#define OMIT_NEG_OP
-#include "unary_ops.h"
+	template<typename O>
+	swizzler& operator +=(O &&o)
+	{										
+		return operator=(decay() + std::forward<O>(o));
+	}
+
+	template<typename O>
+	swizzler& operator -=(O&& o)
+	{
+		return operator=(decay() - std::forward<O>(o));
+	}
+
+	template<typename O>
+	swizzler& operator *=(O&& o)
+	{
+		return operator=(decay() * std::forward<O>(o));
+	}
+
+	template<typename O>
+	swizzler& operator /=(O&& o)
+	{
+		return operator=(decay() / std::forward<O>(o));
+	}
 
 	vector_type operator -() const
 	{
 		return vector_type((-data[indices])...);
 	}
-#undef OMIT_NEG_OP
 
 private:
 	template<typename... Indices>
